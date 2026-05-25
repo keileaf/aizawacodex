@@ -221,7 +221,7 @@
           <span style="font-size:10px;font-family:var(--mono);color:var(--gray2)">3D live</span>
         </div>
         <div class="canvas-wrap">
-          <canvas id="aizawa-canvas" width="220" height="220"></canvas>
+          <canvas id="aizawa-canvas" width="340" height="340"></canvas>
           <div class="canvas-overlay">a=0.95 b=0.7 c=0.6 d=3.5</div>
         </div>
       </div>
@@ -418,9 +418,103 @@ async function loadHistory(){
     historyTotal=json.total;
     document.getElementById('stat-history').textContent=historyTotal;
     renderHistory(json.data);
+    preloadLiveFeed(json.data);
   }catch(e){
     container.innerHTML='<div class="feed-empty"><div class="feed-empty-icon">⚠</div><span>Error al cargar historial</span></div>';
   }
+}
+
+function preloadLiveFeed(rows)
+{
+  const feed =
+    document.getElementById('feed');
+
+  feed.innerHTML = '';
+
+  // Últimos 2 mensajes
+  const latest =
+    rows
+      .slice(0,2)
+      .reverse();
+
+  latest.forEach((r,index)=>
+  {
+    const ts =
+      r.timestamp;
+
+    const hour =
+      ts.slice(11,13) + ':00';
+
+    // Separador hora
+    const sep =
+      document.createElement('div');
+
+    sep.className =
+      'hour-separator';
+
+    sep.innerHTML =
+      `
+      <span class="hour-label">
+        🕐 ${hour} hrs — ${ts.slice(0,10)}
+      </span>
+
+      <div class="hour-line"></div>
+      `;
+
+    feed.appendChild(sep);
+
+    // Tarjeta
+    const card =
+      document.createElement('div');
+
+    card.className =
+      'msg-card';
+
+    card.innerHTML =
+      `
+      <div class="msg-header">
+        <span class="msg-index">
+          #PRELOAD-${index+1}
+        </span>
+
+        <div class="msg-meta">
+          <span class="msg-size">
+            ${r.bytes} bytes
+          </span>
+
+          <span class="msg-timestamp">
+            ${ts.slice(11,19)}
+          </span>
+        </div>
+      </div>
+
+      <div class="msg-body">
+
+        <div>
+          <div class="msg-section-label label-enc">
+            ⬡ Último tráfico cifrado
+          </div>
+
+          <div class="hex-block">
+            ${r.hex_raw || '---'}
+          </div>
+        </div>
+
+        <div>
+          <div class="msg-section-label label-dec">
+            ✓ Último mensaje descifrado
+          </div>
+
+          <div class="plaintext-block">
+            ${r.texto || '---'}
+          </div>
+        </div>
+
+      </div>
+      `;
+
+    feed.appendChild(card);
+  });
 }
 
 function renderHistory(rows){
