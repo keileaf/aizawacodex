@@ -252,7 +252,7 @@
 <script>
 /* ════════ CONFIGURACIÓN ════════ */
 // Después de publicar el Apps Script como Web App, pega la URL aquí:
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwsDcOeOLvoPU5scVbDeH1lVjFcVd7zRdLrYDJlEPE3SPb_8v0c4n47vzjgq1dspFVJpQ/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzG5urzMOeWO5XkingRxcqA2Cj_Yzo3FBlcUPeTTQFR9l-38NtgdZbHCmqN0A4FPNRwPw/exec';
 
 /* ════════ AIZAWA Q32 con BigInt ════════ */
 const Q32=BigInt("4294967296"),MASK64=BigInt("0xFFFFFFFFFFFFFFFF"),
@@ -305,18 +305,62 @@ function updateStats(bytes,ok){
 }
 
 /* ════════ SHEETS — GUARDAR ════════ */
-async function saveToSheets(data){
-  if(!APPS_SCRIPT_URL||APPS_SCRIPT_URL.includes('PEGA_AQUI'))return;
-  const dot=document.getElementById('sync-dot'),txt=document.getElementById('sync-text');
-  dot.className='sync-dot saving';txt.textContent='Guardando...';
-  try{
-    await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify(data),headers:{'Content-Type':'application/json'},mode:'no-cors'});
-    dot.className='sync-dot saved';txt.textContent='Guardado en Sheets ✓';
-    historyTotal++;
-    document.getElementById('stat-history').textContent=historyTotal;
-    setTimeout(()=>{dot.className='sync-dot saved';txt.textContent='Sincronizado'},2000);
-  }catch(e){
-    dot.className='sync-dot';txt.textContent='Error al guardar';
+async function saveToSheets(data)
+{
+  try
+  {
+    const res =
+      await fetch(
+        APPS_SCRIPT_URL,
+        {
+          method:'POST',
+
+          headers:
+          {
+            'Content-Type':
+            'application/json'
+          },
+
+          body:
+            JSON.stringify(data)
+        }
+      );
+
+    const json =
+      await res.json();
+
+    console.log(
+      'Sheets:',
+      json
+    );
+
+    if (json.ok)
+    {
+      document
+        .getElementById(
+          'sync-text'
+        )
+        .textContent =
+        'Sincronizado ✓';
+
+      document
+        .getElementById(
+          'sync-dot'
+        )
+        .className =
+        'sync-dot saved';
+    }
+  }
+  catch(err)
+  {
+    console.error(err);
+
+    document
+      .getElementById(
+        'sync-text'
+      )
+      .textContent =
+      'Error Sheets';
   }
 }
 
@@ -541,7 +585,109 @@ const badge=document.getElementById('status-badge'),statusTxt=document.getElemen
 function setStatus(s,t){badge.className='status-badge '+s;statusTxt.textContent=t}
 const mqttClient=new Paho.MQTT.Client(BROKER,PORT,CLIENT_ID);
 mqttClient.onConnectionLost=function(){setStatus('error','Desconectado');setTimeout(connect,3000)};
-mqttClient.onMessageArrived=function(msg){addMessage(new Uint8Array(msg.payloadBytes))};
+mqttClient.onMessageArrived =
+async function(msg)
+{
+  try
+  {
+    const rawBytes =
+      new Uint8Array(
+        msg.payloadBytes
+      );
+
+    console.log(
+      'MQTT RX:',
+      rawBytes
+    );
+
+    // DESCIFRAR
+    const result =
+      await decryptMsg(rawBytes);
+
+    // EXTRAER PARTES
+    const seed1 =
+      toHex(
+        rawBytes.slice(0,8)
+      );
+
+    const seed2 =
+      toHex(
+        rawBytes.slice(8,16)
+      );
+
+    const nonce =
+      toHex(
+        rawBytes.slice(16,28)
+      );
+
+    const tag =
+      toHex(
+        rawBytes.slice(
+          rawBytes.length-16
+        )
+      );
+
+    const cipher =
+      toHex(
+        rawBytes.slice(
+          28,
+          rawBytes.length-16
+        )
+      );
+
+    // TEXTO
+    let texto =
+      '⚠ No descifrado';
+
+    if (result)
+      texto = result.text;
+
+    // ESTADÍSTICAS
+    updateStats(
+      rawBytes.length,
+      !!result
+    );
+
+    // MOSTRAR
+    addVisualMessage({
+      timestamp:new Date(),
+      hex_raw:cipher,
+      texto:texto,
+      seed1:seed1,
+      seed2:seed2,
+      nonce:nonce,
+      bytes:rawBytes.length,
+      ok:!!result
+    });
+
+    // GUARDAR EN SHEETS
+    await saveToSheets({
+
+      api_key:
+      'AIZAWA_SECURE_2026',
+
+      hex_raw:cipher,
+
+      texto:texto,
+
+      seed1:seed1,
+
+      seed2:seed2,
+
+      nonce:nonce,
+
+      bytes:rawBytes.length,
+
+      ok:!!result
+    });
+
+  }
+  catch(err)
+  {
+    console.error(err);
+  }
+};
+
 function connect(){
   setStatus('','Conectando...');
   mqttClient.connect({
