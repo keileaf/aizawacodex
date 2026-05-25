@@ -304,61 +304,103 @@ function updateStats(bytes,ok){
   document.getElementById('stat-bytes').textContent=totalBytes>=1024?(totalBytes/1024).toFixed(1)+' KB':totalBytes+' B';
 }
 
-/* ════════ SHEETS — GUARDAR ════════ */
-async function saveToSheets(data)
+/* ════════ SHEETS — GUARDAR ════════ */async function saveToSheets(data)
 {
+  // Si no hay URL configurada
+  if (
+    !APPS_SCRIPT_URL ||
+    APPS_SCRIPT_URL.includes('PEGA_AQUI')
+  )
+  {
+    return;
+  }
+
   try
   {
-    const res =
+    document
+      .getElementById('sync-dot')
+      .className =
+      'sync-dot saving';
+
+    document
+      .getElementById('sync-text')
+      .textContent =
+      'Guardando...';
+
+    const response =
       await fetch(
         APPS_SCRIPT_URL,
         {
-          method:'POST',
+          method: 'POST',
+          mode: 'cors',
 
           headers:
           {
             'Content-Type':
-            'application/json'
+            'text/plain'
           },
 
           body:
-            JSON.stringify(data)
+            JSON.stringify({
+              api_key:
+                'AIZAWA_SECURE_2026',
+
+              hex_raw:
+                data.hex_raw || '',
+
+              texto:
+                data.texto || '',
+
+              seed1:
+                data.seed1 || '',
+
+              seed2:
+                data.seed2 || '',
+
+              nonce:
+                data.nonce || '',
+
+              bytes:
+                data.bytes || 0,
+
+              ok:
+                data.ok || false
+            })
         }
       );
 
-    const json =
-      await res.json();
+    const text =
+      await response.text();
 
     console.log(
-      'Sheets:',
-      json
+      'Sheets response:',
+      text
     );
 
-    if (json.ok)
-    {
-      document
-        .getElementById(
-          'sync-text'
-        )
-        .textContent =
-        'Sincronizado ✓';
+    document
+      .getElementById('sync-dot')
+      .className =
+      'sync-dot saved';
 
-      document
-        .getElementById(
-          'sync-dot'
-        )
-        .className =
-        'sync-dot saved';
-    }
+    document
+      .getElementById('sync-text')
+      .textContent =
+      'Sincronizado ✓';
   }
   catch(err)
   {
-    console.error(err);
+    console.error(
+      'ERROR SHEETS:',
+      err
+    );
 
     document
-      .getElementById(
-        'sync-text'
-      )
+      .getElementById('sync-dot')
+      .className =
+      'sync-dot';
+
+    document
+      .getElementById('sync-text')
       .textContent =
       'Error Sheets';
   }
@@ -579,13 +621,15 @@ function clearFeed(){
 }
 
 /* ════════ MQTT ════════ */
-const BROKER='broker.hivemq.com',PORT=8000,TOPIC='aizawa/secure';
+const BROKER = 'broker.hivemq.com';
+const PORT   = 8884;
+const TOPIC='aizawa/secure';
 const CLIENT_ID='aizawa_web_'+Math.random().toString(36).slice(2,8);
 const badge=document.getElementById('status-badge'),statusTxt=document.getElementById('status-text');
 function setStatus(s,t){badge.className='status-badge '+s;statusTxt.textContent=t}
 const mqttClient=new Paho.MQTT.Client(BROKER,PORT,CLIENT_ID);
 mqttClient.onConnectionLost=function(){setStatus('error','Desconectado');setTimeout(connect,3000)};
-mqttClient.onMessageArrived =
+mqttClient.onMessageArrived = mqttClient.onMessageArrived =
 async function(msg)
 {
   try
@@ -600,91 +644,20 @@ async function(msg)
       rawBytes
     );
 
-    // DESCIFRAR
-    const result =
-      await decryptMsg(rawBytes);
+    // MOSTRAR EN FEED
+    await addMessage(rawBytes);
 
-    // EXTRAER PARTES
-    const seed1 =
-      toHex(
-        rawBytes.slice(0,8)
-      );
-
-    const seed2 =
-      toHex(
-        rawBytes.slice(8,16)
-      );
-
-    const nonce =
-      toHex(
-        rawBytes.slice(16,28)
-      );
-
-    const tag =
-      toHex(
-        rawBytes.slice(
-          rawBytes.length-16
-        )
-      );
-
-    const cipher =
-      toHex(
-        rawBytes.slice(
-          28,
-          rawBytes.length-16
-        )
-      );
-
-    // TEXTO
-    let texto =
-      '⚠ No descifrado';
-
-    if (result)
-      texto = result.text;
-
-    // ESTADÍSTICAS
-    updateStats(
-      rawBytes.length,
-      !!result
+    // DEBUG
+    console.log(
+      'Mensaje procesado OK'
     );
-
-    // MOSTRAR
-    addVisualMessage({
-      timestamp:new Date(),
-      hex_raw:cipher,
-      texto:texto,
-      seed1:seed1,
-      seed2:seed2,
-      nonce:nonce,
-      bytes:rawBytes.length,
-      ok:!!result
-    });
-
-    // GUARDAR EN SHEETS
-    await saveToSheets({
-
-      api_key:
-      'AIZAWA_SECURE_2026',
-
-      hex_raw:cipher,
-
-      texto:texto,
-
-      seed1:seed1,
-
-      seed2:seed2,
-
-      nonce:nonce,
-
-      bytes:rawBytes.length,
-
-      ok:!!result
-    });
-
   }
   catch(err)
   {
-    console.error(err);
+    console.error(
+      'ERROR MQTT:',
+      err
+    );
   }
 };
 
@@ -693,7 +666,7 @@ function connect(){
   mqttClient.connect({
     onSuccess(){setStatus('connected','Conectado');mqttClient.subscribe(TOPIC);loadHistory()},
     onFailure(e){setStatus('error','Error: '+e.errorMessage);setTimeout(connect,4000)},
-    keepAliveInterval:60,useSSL:false
+    keepAliveInterval:60,useSSL:true
   });
 }
 connect();
