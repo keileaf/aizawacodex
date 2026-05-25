@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aizawa Secure — Monitor MQTT</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --sky:#38BDF8; --sky-dim:#0EA5E9; --sky-dark:#0369A1;
+      --bg:#0A0F1A; --bg2:#0F1623; --bg3:#151E2E;
+      --border:#1E2D42; --border2:#253649;
+      --white:#F0F6FF; --gray1:#94A3B8; --gray2:#64748B; --gray3:#334155;
+      --green:#34D399; --red:#F87171; --amber:#FBBF24;
+      --mono:'Space Mono',monospace; --sans:'DM Sans',sans-serif;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--white);font-family:var(--sans);font-size:15px;line-height:1.6;min-height:100vh;overflow-x:hidden}
+    .bg-grid{position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;opacity:.3;pointer-events:none;z-index:0}
+    .bg-glow{position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:800px;height:500px;background:radial-gradient(ellipse,rgba(56,189,248,.08) 0%,transparent 70%);pointer-events:none;z-index:0}
+    .app{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:0 24px 60px}
+    header{display:flex;align-items:center;justify-content:space-between;padding:28px 0 32px;border-bottom:1px solid var(--border);margin-bottom:32px;gap:16px;flex-wrap:wrap}
+    .header-left{display:flex;align-items:center;gap:14px}
+    .logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--sky-dark),var(--sky));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:0 0 20px rgba(56,189,248,.3)}
+    .logo-text h1{font-family:var(--mono);font-size:18px;font-weight:700;letter-spacing:-.5px}
+    .logo-text p{font-size:12px;color:var(--gray2);font-family:var(--mono)}
+    .header-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .status-badge{display:flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;font-size:12px;font-family:var(--mono);border:1px solid var(--border2);background:var(--bg2);transition:all .3s}
+    .status-dot{width:8px;height:8px;border-radius:50%;background:var(--gray3);transition:all .3s}
+    .status-badge.connected .status-dot{background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
+    .status-badge.connected{border-color:rgba(52,211,153,.3)}
+    .status-badge.error .status-dot{background:var(--red)}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+    @media(max-width:700px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+    .stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px 20px;position:relative;overflow:hidden;transition:border-color .3s}
+    .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--sky),transparent);opacity:0;transition:opacity .3s}
+    .stat-card:hover::before{opacity:1}
+    .stat-label{font-size:11px;font-family:var(--mono);color:var(--gray2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+    .stat-value{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--sky);line-height:1}
+    .stat-sub{font-size:11px;color:var(--gray2);margin-top:4px}
+    .main-grid{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start}
+    @media(max-width:960px){.main-grid{grid-template-columns:1fr}}
+    .panel{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+    .panel-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);background:var(--bg3)}
+    .panel-title{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--gray1);text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;gap:8px}
+    .panel-title-dot{width:6px;height:6px;border-radius:50%;background:var(--sky)}
+    .panel-actions{display:flex;gap:8px}
+    .panel-action{font-size:11px;font-family:var(--mono);padding:4px 10px;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--gray1);cursor:pointer;transition:all .2s}
+    .panel-action:hover{border-color:var(--sky-dim);color:var(--sky)}
+
+    /* TABS DE HISTORIAL */
+    .tabs-bar{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--bg3);overflow-x:auto}
+    .tab{font-family:var(--mono);font-size:11px;padding:10px 16px;cursor:pointer;color:var(--gray2);border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s;background:transparent;border-top:none;border-left:none;border-right:none}
+    .tab:hover{color:var(--gray1)}
+    .tab.active{color:var(--sky);border-bottom-color:var(--sky)}
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+
+    /* FEED */
+    .feed{max-height:520px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+    .feed::-webkit-scrollbar{width:4px}
+    .feed::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+    .feed-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:var(--gray3);gap:12px;font-family:var(--mono);font-size:13px}
+    .feed-empty-icon{font-size:32px;opacity:.4}
+
+    /* HORA SEPARADOR */
+    .hour-separator{display:flex;align-items:center;gap:10px;padding:6px 4px;margin:4px 0}
+    .hour-label{font-family:var(--mono);font-size:10px;color:var(--sky);font-weight:700;white-space:nowrap}
+    .hour-line{flex:1;height:1px;background:linear-gradient(90deg,var(--sky-dark),transparent)}
+
+    /* MSG CARD */
+    .msg-card{border:1px solid var(--border);border-radius:10px;overflow:hidden;animation:slideIn .3s ease;transition:border-color .2s}
+    .msg-card:hover{border-color:var(--border2)}
+    @keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+    .msg-header{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--bg3);border-bottom:1px solid var(--border);gap:10px;flex-wrap:wrap}
+    .msg-index{font-family:var(--mono);font-size:11px;color:var(--gray2)}
+    .msg-meta{display:flex;align-items:center;gap:10px}
+    .msg-size{font-family:var(--mono);font-size:11px;color:var(--gray2)}
+    .msg-timestamp{font-family:var(--mono);font-size:11px;color:var(--sky);font-weight:700}
+    .msg-body{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+    .msg-section-label{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px}
+    .label-enc{color:var(--red)} .label-dec{color:var(--green)} .label-meta{color:var(--sky)}
+    .hex-block{font-family:var(--mono);font-size:11px;color:var(--amber);background:rgba(251,191,36,.05);border:1px solid rgba(251,191,36,.15);border-radius:6px;padding:8px 10px;word-break:break-all;line-height:1.7}
+    .plaintext-block{font-family:var(--sans);font-size:15px;font-weight:500;color:var(--green);background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.2);border-radius:6px;padding:10px 12px}
+    .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+    .meta-item{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 10px}
+    .meta-key{font-family:var(--mono);font-size:9px;color:var(--gray2);text-transform:uppercase;letter-spacing:1px}
+    .meta-val{font-family:var(--mono);font-size:10px;color:var(--sky);word-break:break-all;margin-top:2px}
+
+    /* HISTORIAL POR DÍA */
+    .history-day{margin-bottom:20px}
+    .day-header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:8px 8px 0 0;cursor:pointer}
+    .day-title{font-family:var(--mono);font-size:12px;color:var(--sky);font-weight:700}
+    .day-count{font-family:var(--mono);font-size:10px;color:var(--gray2)}
+    .day-arrow{margin-left:auto;color:var(--gray2);font-size:10px;transition:transform .2s}
+    .day-body{border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden}
+    .day-body.collapsed{display:none}
+
+    /* SIDEBAR */
+    .sidebar{display:flex;flex-direction:column;gap:20px}
+    #aizawa-canvas{width:100%;aspect-ratio:1;display:block}
+    .canvas-wrap{position:relative}
+    .canvas-overlay{position:absolute;bottom:10px;left:12px;font-family:var(--mono);font-size:10px;color:var(--sky);opacity:.7;pointer-events:none}
+    .info-list{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+    .info-row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+    .info-row:last-child{border-bottom:none;padding-bottom:0}
+    .info-key{font-family:var(--mono);font-size:11px;color:var(--gray2);flex-shrink:0}
+    .info-val{font-family:var(--mono);font-size:11px;color:var(--white);text-align:right;word-break:break-all}
+    .info-val.green{color:var(--green)} .info-val.sky{color:var(--sky)}
+
+    footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);text-align:center;font-family:var(--mono);font-size:11px;color:var(--gray2)}
+    footer a{color:var(--sky);text-decoration:none}
+    ::-webkit-scrollbar{width:5px;height:5px}
+    ::-webkit-scrollbar-track{background:var(--bg)}
+    ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+    .sync-indicator{font-family:var(--mono);font-size:10px;color:var(--gray2);display:flex;align-items:center;gap:6px}
+    .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--gray3)}
+    .sync-dot.saving{background:var(--amber);animation:pulse 1s infinite}
+    .sync-dot.saved{background:var(--green)}
+  </style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
+<div class="app">
+  <header>
+    <div class="header-left">
+      <div class="logo-icon">⬡</div>
+      <div class="logo-text">
+        <h1>AIZAWA / SECURE</h1>
+        <p>aizawa/secure · broker.hivemq.com</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="sync-indicator" id="sync-indicator">
+        <div class="sync-dot" id="sync-dot"></div>
+        <span id="sync-text">Sheets no configurado</span>
+      </div>
+      <div class="status-badge" id="status-badge">
+        <div class="status-dot"></div>
+        <span id="status-text">Conectando...</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Mensajes</div>
+      <div class="stat-value" id="stat-total">0</div>
+      <div class="stat-sub">en esta sesión</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Descifrados</div>
+      <div class="stat-value" id="stat-ok" style="color:var(--green)">0</div>
+      <div class="stat-sub">exitosos</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Bytes totales</div>
+      <div class="stat-value" id="stat-bytes">0</div>
+      <div class="stat-sub">recibidos</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Historial</div>
+      <div class="stat-value" id="stat-history">0</div>
+      <div class="stat-sub">guardados en Sheets</div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <div style="display:flex;flex-direction:column;gap:20px">
+
+      <!-- FEED EN VIVO -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><div class="panel-title-dot"></div>Feed en vivo</div>
+          <div class="panel-actions">
+            <button class="panel-action" onclick="clearFeed()">Limpiar</button>
+          </div>
+        </div>
+        <div class="feed" id="feed">
+          <div class="feed-empty" id="feed-empty">
+            <div class="feed-empty-icon">📡</div>
+            <span>Esperando mensajes...</span>
+            <span style="font-size:10px;color:var(--gray3)">topic: aizawa/secure</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- HISTORIAL -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><div class="panel-title-dot"></div>Historial</div>
+          <div class="panel-actions">
+            <button class="panel-action" onclick="loadHistory()">↻ Actualizar</button>
+          </div>
+        </div>
+        <div class="tabs-bar" id="history-tabs">
+          <button class="tab active" onclick="switchTab('all',this)">Todo</button>
+        </div>
+        <div id="history-container" style="max-height:480px;overflow-y:auto;padding:12px">
+          <div class="feed-empty">
+            <div class="feed-empty-icon">📋</div>
+            <span style="font-size:12px">Configura el Apps Script URL para ver el historial</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><div class="panel-title-dot"></div>Atractor de Aizawa</div>
+          <span style="font-size:10px;font-family:var(--mono);color:var(--gray2)">3D live</span>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="aizawa-canvas" width="340" height="340"></canvas>
+          <div class="canvas-overlay">a=0.95 b=0.7 c=0.6 d=3.5</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><div class="panel-title-dot"></div>Sistema</div>
+        </div>
+        <div class="info-list">
+          <div class="info-row"><span class="info-key">Broker</span><span class="info-val sky">broker.hivemq.com</span></div>
+          <div class="info-row"><span class="info-key">Topic</span><span class="info-val sky">aizawa/secure</span></div>
+          <div class="info-row"><span class="info-key">Cifrado</span><span class="info-val green">AES-256-GCM</span></div>
+          <div class="info-row"><span class="info-key">PRNG</span><span class="info-val green">Aizawa Q32</span></div>
+          <div class="info-row"><span class="info-key">KDF</span><span class="info-val green">SHA-256</span></div>
+          <div class="info-row"><span class="info-key">Warmup</span><span class="info-val">3,000 pasos</span></div>
+          <div class="info-row"><span class="info-key">Pool</span><span class="info-val">128 bytes caóticos</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Aizawa Secure Monitor &mdash; UABC IoT Security &mdash;
+    <a href="https://github.com" target="_blank">GitHub</a>
+  </footer>
+</div>
+
+<script>
+/* ════════ CONFIGURACIÓN ════════ */
+// Después de publicar el Apps Script como Web App, pega la URL aquí:
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxBVMDrG84iO6ZdxSViLUPAGaExUa58nwZLHGKYq0wiH36byQBvCtPpGUJJbsI1GeNswA/exec';
+
+/* ════════ AIZAWA Q32 con BigInt ════════ */
+const Q32=BigInt("4294967296"),MASK64=BigInt("0xFFFFFFFFFFFFFFFF"),
+      SIGN64=BigInt("0x8000000000000000"),MOD64=BigInt("0x10000000000000000");
+function toInt64(v){v=((v%MOD64)+MOD64)%MOD64;if(v>=SIGN64)v-=MOD64;return v}
+function toUint64(v){return((v%MOD64)+MOD64)%MOD64}
+function mulQ32(a,b){return toInt64(toInt64(toInt64(a)*toInt64(b))>>32n)}
+function divTrunc(a,b){const s=(a<0n)!==(b<0n)?-1n:1n;return s*(toInt64(a<0n?-a:a)/(b<0n?-b:b))}
+function rotl64(v,r){v=toUint64(v);r=BigInt(r);return toUint64((v<<r)|(v>>(64n-r)))}
+const PA=toInt64(BigInt(Math.trunc(.95*Number(Q32)))),PB=toInt64(BigInt(Math.trunc(.7*Number(Q32)))),
+      PC=toInt64(BigInt(Math.trunc(.6*Number(Q32)))),PD=toInt64(BigInt(Math.trunc(3.5*Number(Q32)))),
+      PE=toInt64(BigInt(Math.trunc(.25*Number(Q32)))),PF=toInt64(BigInt(Math.trunc(.1*Number(Q32)))),
+      PH=toInt64(BigInt(Math.trunc(.005*Number(Q32))));
+const SM1=BigInt("0xBF58476D1CE4E5B9"),SM2=BigInt("0x94D049BB133111EB");
+let sx=0n,sy=0n,sz=0n;
+function aizawaInit(s1,s2){sx=toInt64(toUint64(s1)^BigInt("0x123456789ABCDEF0"));sy=toInt64(toUint64(s2)^BigInt("0x0FEDCBA987654321"));sz=toInt64(toUint64(toUint64(s1<<1n)^toUint64(s2>>1n)^BigInt("0xA5A5A5A5A5A5A5A5")))}
+function aizawaStep(){const dx=toInt64(mulQ32(toInt64(sz-PB),sx)-mulQ32(PD,sy)),dy=toInt64(mulQ32(PD,sx)+mulQ32(toInt64(sz-PB),sy)),z2=mulQ32(sz,sz),z3=divTrunc(mulQ32(z2,sz),3n),term=mulQ32(toInt64(mulQ32(sx,sx)+mulQ32(sy,sy)),toInt64(Q32+mulQ32(PE,sz))),dz=toInt64(PC+mulQ32(PA,sz)-z3-term+mulQ32(mulQ32(PF,sz),mulQ32(mulQ32(sx,sx),sx)));sx=toInt64(sx+mulQ32(PH,dx));sy=toInt64(sy+mulQ32(PH,dy));sz=toInt64(sz+mulQ32(PH,dz))}
+function chaosByte(){aizawaStep();let m=toUint64(toUint64(sx)^rotl64(sy,17)^rotl64(sz,41));m^=m>>30n;m=toUint64(m*SM1);m^=m>>27n;m=toUint64(m*SM2);m^=m>>31n;return Number(m&0xFFn)}
+async function deriveKey(s1,s2){aizawaInit(s1,s2);for(let i=0;i<3000;i++)aizawaStep();const p=new Uint8Array(128);for(let i=0;i<128;i++)p[i]=chaosByte();return new Uint8Array(await crypto.subtle.digest('SHA-256',p))}
+async function decryptMsg(raw){
+  if(raw.length<45)return null;
+  const v=new DataView(raw.buffer,raw.byteOffset);
+  const s1=v.getBigUint64(0,true),s2=v.getBigUint64(8,true);
+  const nonce=raw.slice(16,28),cLen=raw.length-44,ct=raw.slice(28,28+cLen),tag=raw.slice(28+cLen);
+  const kb=await deriveKey(s1,s2);
+  try{
+    const ck=await crypto.subtle.importKey('raw',kb,{name:'AES-GCM'},false,['decrypt']);
+    const combined=new Uint8Array(ct.length+tag.length);combined.set(ct);combined.set(tag,ct.length);
+    const pb=await crypto.subtle.decrypt({name:'AES-GCM',iv:nonce,tagLength:128},ck,combined);
+    return{text:new TextDecoder().decode(pb),s1,s2,nonce,kb,ct};
+  }catch{return null}
+}
+
+/* ════════ UTILS ════════ */
+function toHex(b){return Array.from(b).map(x=>x.toString(16).padStart(2,'0')).join('')}
+function fmtHex(b,max=40){const h=toHex(b.slice(0,max));return b.length>max?h+`…+${b.length-max}B`:h}
+function readU64LE(b,o){let h='';for(let i=7;i>=0;i--)h+=b[o+i].toString(16).padStart(2,'0');return h.toUpperCase()}
+function fmtTime(d){return d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+function fmtDate(d){return d.toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}
+function dayKey(d){return d.toISOString().slice(0,10)}
+function hourKey(d){return d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}).slice(0,5).replace(':','') < '0000' ? '00:00' : d.toLocaleTimeString('es-MX',{hour:'2-digit',hour12:false}).slice(0,2)+':00'}
+
+/* ════════ ESTADÍSTICAS ════════ */
+let totalMsg=0,okMsg=0,totalBytes=0,historyTotal=0;
+function updateStats(bytes,ok){
+  totalMsg++;totalBytes+=bytes;if(ok)okMsg++;
+  document.getElementById('stat-total').textContent=totalMsg;
+  document.getElementById('stat-ok').textContent=okMsg;
+  document.getElementById('stat-bytes').textContent=totalBytes>=1024?(totalBytes/1024).toFixed(1)+' KB':totalBytes+' B';
+}
+
+/* ════════ SHEETS — GUARDAR ════════ */
+async function saveToSheets(data){
+  if(!APPS_SCRIPT_URL||APPS_SCRIPT_URL.includes('PEGA_AQUI'))return;
+  const dot=document.getElementById('sync-dot'),txt=document.getElementById('sync-text');
+  dot.className='sync-dot saving';txt.textContent='Guardando...';
+  try{
+    await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify(data),headers:{'Content-Type':'application/json'},mode:'no-cors'});
+    dot.className='sync-dot saved';txt.textContent='Guardado en Sheets ✓';
+    historyTotal++;
+    document.getElementById('stat-history').textContent=historyTotal;
+    setTimeout(()=>{dot.className='sync-dot saved';txt.textContent='Sincronizado'},2000);
+  }catch(e){
+    dot.className='sync-dot';txt.textContent='Error al guardar';
+  }
+}
+
+/* ════════ SHEETS — CARGAR HISTORIAL ════════ */
+async function loadHistory(){
+  if(!APPS_SCRIPT_URL||APPS_SCRIPT_URL.includes('PEGA_AQUI'))return;
+  const container=document.getElementById('history-container');
+  container.innerHTML='<div class="feed-empty"><div class="feed-empty-icon" style="animation:pulse 1s infinite">⟳</div><span>Cargando historial...</span></div>';
+  try{
+    const res=await fetch(APPS_SCRIPT_URL+'?t='+Date.now());
+    const json=await res.json();
+    if(!json.ok||!json.data.length){container.innerHTML='<div class="feed-empty"><div class="feed-empty-icon">📭</div><span>Sin mensajes guardados</span></div>';return;}
+    historyTotal=json.total;
+    document.getElementById('stat-history').textContent=historyTotal;
+    renderHistory(json.data);
+  }catch(e){
+    container.innerHTML='<div class="feed-empty"><div class="feed-empty-icon">⚠</div><span>Error al cargar historial</span></div>';
+  }
+}
+
+function renderHistory(rows){
+  // Agrupar por día
+  const byDay={};
+  rows.forEach(r=>{
+    const d=r.timestamp.slice(0,10);
+    if(!byDay[d])byDay[d]=[];
+    byDay[d].push(r);
+  });
+
+  // Tabs de días
+  const tabsBar=document.getElementById('history-tabs');
+  tabsBar.innerHTML='<button class="tab active" onclick="switchTab(\'all\',this)">Todo</button>';
+  Object.keys(byDay).sort().reverse().forEach(day=>{
+    const btn=document.createElement('button');
+    btn.className='tab';
+    btn.textContent=day;
+    btn.onclick=function(){switchTab(day,this)};
+    tabsBar.appendChild(btn);
+  });
+
+  // Contenido agrupado por día → hora
+  const container=document.getElementById('history-container');
+  container.innerHTML='';
+
+  Object.keys(byDay).sort().reverse().forEach(day=>{
+    const dayRows=byDay[day];
+
+    // Agrupar por hora
+    const byHour={};
+    dayRows.forEach(r=>{
+      const h=r.timestamp.slice(11,13)+':00';
+      if(!byHour[h])byHour[h]=[];
+      byHour[h].push(r);
+    });
+
+    const dayDiv=document.createElement('div');
+    dayDiv.className='history-day';
+    dayDiv.dataset.day=day;
+
+    const d=new Date(day+'T12:00:00');
+    const dayLabel=d.toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+    dayDiv.innerHTML=`
+      <div class="day-header" onclick="toggleDay(this)">
+        <span style="font-size:16px">📅</span>
+        <span class="day-title">${dayLabel}</span>
+        <span class="day-count">${dayRows.length} msgs</span>
+        <span class="day-arrow">▼</span>
+      </div>
+      <div class="day-body" id="day-${day}"></div>
+    `;
+
+    const dayBody=dayDiv.querySelector('.day-body');
+
+    Object.keys(byHour).sort().reverse().forEach(hour=>{
+      const hourRows=byHour[hour];
+      // Separador de hora
+      const sep=document.createElement('div');
+      sep.className='hour-separator';
+      sep.innerHTML=`<span class="hour-label">🕐 ${hour} hrs</span><div class="hour-line"></div><span style="font-family:var(--mono);font-size:10px;color:var(--gray2)">${hourRows.length} msgs</span>`;
+      dayBody.appendChild(sep);
+
+      // Mensajes de esa hora
+      hourRows.forEach((r,i)=>{
+        const card=document.createElement('div');
+        card.className='msg-card';
+        card.style.marginBottom='8px';
+        const ts=r.timestamp.slice(11,19);
+        card.innerHTML=`
+          <div class="msg-header">
+            <span class="msg-index">#${String(i+1).padStart(3,'0')}</span>
+            <div class="msg-meta">
+              <span class="msg-size">${r.bytes} bytes</span>
+              <span class="msg-timestamp">${ts}</span>
+            </div>
+          </div>
+          <div class="msg-body">
+            <div>
+              <div class="msg-section-label label-enc">⬡ Tráfico cifrado</div>
+              <div class="hex-block">${r.hex_raw||'—'}</div>
+            </div>
+            <div>
+              <div class="msg-section-label label-dec">✓ Mensaje descifrado</div>
+              ${r.ok==='✓'
+                ?`<div class="plaintext-block">${r.texto}</div>`
+                :`<div class="plaintext-block" style="color:var(--red);background:rgba(248,113,113,.07);border-color:rgba(248,113,113,.2)">${r.texto}</div>`
+              }
+            </div>
+            <div class="meta-grid">
+              <div class="meta-item"><div class="meta-key">seed1</div><div class="meta-val">${r.seed1}</div></div>
+              <div class="meta-item"><div class="meta-key">seed2</div><div class="meta-val">${r.seed2}</div></div>
+              <div class="meta-item" style="grid-column:span 2"><div class="meta-key">nonce</div><div class="meta-val">${r.nonce}</div></div>
+            </div>
+          </div>
+        `;
+        dayBody.appendChild(card);
+      });
+    });
+
+    container.appendChild(dayDiv);
+  });
+}
+
+function toggleDay(header){
+  const body=header.nextElementSibling;
+  const arrow=header.querySelector('.day-arrow');
+  body.classList.toggle('collapsed');
+  arrow.textContent=body.classList.contains('collapsed')?'▶':'▼';
+}
+
+function switchTab(day,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.history-day').forEach(d=>{
+    d.style.display=(day==='all'||d.dataset.day===day)?'block':'none';
+  });
+}
+
+/* ════════ FEED EN VIVO ════════ */
+let msgCount=0,lastHour='';
+async function addMessage(rawBytes){
+  msgCount++;
+  const now=new Date();
+  const ts=fmtTime(now);
+  const currentHour=now.getHours().toString().padStart(2,'0')+':00';
+
+  const feed=document.getElementById('feed');
+  const empty=document.getElementById('feed-empty');
+  if(empty)empty.remove();
+
+  // Separador de hora en el feed
+  if(currentHour!==lastHour){
+    lastHour=currentHour;
+    const sep=document.createElement('div');
+    sep.className='hour-separator';
+    sep.innerHTML=`<span class="hour-label">🕐 ${currentHour} hrs &mdash; ${fmtDate(now)}</span><div class="hour-line"></div>`;
+    feed.prepend(sep);
+  }
+
+  const result=await decryptMsg(rawBytes);
+  updateStats(rawBytes.length,!!result);
+
+  const s1hex=rawBytes.length>=8?readU64LE(rawBytes,0):'???';
+  const s2hex=rawBytes.length>=16?readU64LE(rawBytes,8):'???';
+  const nonceHex=rawBytes.length>=28?toHex(rawBytes.slice(16,28)):'???';
+  const rawHex=fmtHex(rawBytes,40);
+
+  // Guardar en Sheets
+  await saveToSheets({
+    hex_raw: rawHex,
+    texto: result?result.text:'',
+    seed1: s1hex,
+    seed2: s2hex,
+    nonce: nonceHex,
+    bytes: rawBytes.length,
+    ok: !!result
+  });
+
+  const card=document.createElement('div');
+  card.className='msg-card';
+  card.innerHTML=`
+    <div class="msg-header">
+      <span class="msg-index">#${String(msgCount).padStart(4,'0')}</span>
+      <div class="msg-meta">
+        <span class="msg-size">${rawBytes.length} bytes</span>
+        <span class="msg-timestamp">${ts}</span>
+      </div>
+    </div>
+    <div class="msg-body">
+      <div>
+        <div class="msg-section-label label-enc">⬡ Tráfico cifrado (hex)</div>
+        <div class="hex-block">${rawHex}</div>
+      </div>
+      <div>
+        <div class="msg-section-label label-dec">✓ Mensaje descifrado</div>
+        ${result?`<div class="plaintext-block">${result.text}</div>`:`<div class="plaintext-block" style="color:var(--red);background:rgba(248,113,113,.07);border-color:rgba(248,113,113,.2)">⚠ No se pudo descifrar</div>`}
+      </div>
+      <div>
+        <div class="msg-section-label label-meta">◈ Metadatos</div>
+        <div class="meta-grid">
+          <div class="meta-item"><div class="meta-key">seed1</div><div class="meta-val">${s1hex}</div></div>
+          <div class="meta-item"><div class="meta-key">seed2</div><div class="meta-val">${s2hex}</div></div>
+          <div class="meta-item" style="grid-column:span 2"><div class="meta-key">nonce</div><div class="meta-val">${nonceHex}</div></div>
+          ${result?`<div class="meta-item" style="grid-column:span 2"><div class="meta-key">key (SHA-256)</div><div class="meta-val">${toHex(result.kb)}</div></div>`:''}
+        </div>
+      </div>
+    </div>
+  `;
+  feed.prepend(card);
+}
+
+function clearFeed(){
+  document.getElementById('feed').innerHTML='<div class="feed-empty" id="feed-empty"><div class="feed-empty-icon">📡</div><span>Esperando mensajes...</span><span style="font-size:10px;color:var(--gray3)">topic: aizawa/secure</span></div>';
+  totalMsg=okMsg=totalBytes=msgCount=0;lastHour='';
+  ['stat-total','stat-ok','stat-bytes'].forEach(id=>document.getElementById(id).textContent='0');
+}
+
+/* ════════ MQTT ════════ */
+const BROKER='broker.hivemq.com',PORT=8000,TOPIC='aizawa/secure';
+const CLIENT_ID='aizawa_web_'+Math.random().toString(36).slice(2,8);
+const badge=document.getElementById('status-badge'),statusTxt=document.getElementById('status-text');
+function setStatus(s,t){badge.className='status-badge '+s;statusTxt.textContent=t}
+const mqttClient=new Paho.MQTT.Client(BROKER,PORT,CLIENT_ID);
+mqttClient.onConnectionLost=function(){setStatus('error','Desconectado');setTimeout(connect,3000)};
+mqttClient.onMessageArrived=function(msg){addMessage(new Uint8Array(msg.payloadBytes))};
+function connect(){
+  setStatus('','Conectando...');
+  mqttClient.connect({
+    onSuccess(){setStatus('connected','Conectado');mqttClient.subscribe(TOPIC);loadHistory()},
+    onFailure(e){setStatus('error','Error: '+e.errorMessage);setTimeout(connect,4000)},
+    keepAliveInterval:60,useSSL:false
+  });
+}
+connect();
+
+/* ════════ ATRACTOR AIZAWA — CANVAS ════════ */
+(function(){
+  const canvas=document.getElementById('aizawa-canvas'),ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  const fa=0.95,fb=0.7,fc=0.6,fd=3.5,fe=0.25,ff=0.1,fh=0.005;
+  let ax=0.1,ay=0,az=0,angle=0;
+  const TRAIL=2500,pts=[];
+  function step(){const dx=(az-fb)*ax-fd*ay,dy=fd*ax+(az-fb)*ay,dz=fc+fa*az-az*az*az/3-(ax*ax+ay*ay)*(1+fe*az)+ff*az*ax*ax*ax;ax+=fh*dx;ay+=fh*dy;az+=fh*dz}
+  function proj(x,y,z,a){const c=Math.cos(a),s=Math.sin(a),px=x*c+z*s,pz=-x*s+z*c,sc=80/(pz+4);return{sx:W/2+px*sc*18,sy:H/2-y*sc*18,d:(pz+4)/8}}
+  function draw(){
+    for(let i=0;i<6;i++){step();pts.push({x:ax,y:ay,z:az});if(pts.length>TRAIL)pts.shift()}
+    angle+=0.004;
+    ctx.fillStyle='rgba(10,15,26,0.18)';ctx.fillRect(0,0,W,H);
+    for(let i=1;i<pts.length;i++){
+      const p0=proj(pts[i-1].x,pts[i-1].y,pts[i-1].z,angle),p1=proj(pts[i].x,pts[i].y,pts[i].z,angle);
+      const t=i/pts.length,al=t*.85,r=Math.round(56+t*14),g=Math.round(189-t*40),b=Math.round(248-t*80);
+      ctx.beginPath();ctx.moveTo(p0.sx,p0.sy);ctx.lineTo(p1.sx,p1.sy);
+      ctx.strokeStyle=`rgba(${r},${g},${b},${al})`;ctx.lineWidth=t*1.2+.3;ctx.stroke();
+    }
+    if(pts.length){const l=pts[pts.length-1],p=proj(l.x,l.y,l.z,angle);
+      ctx.beginPath();ctx.arc(p.sx,p.sy,3,0,Math.PI*2);ctx.fillStyle='rgba(56,189,248,.9)';ctx.fill();
+      ctx.beginPath();ctx.arc(p.sx,p.sy,6,0,Math.PI*2);ctx.fillStyle='rgba(56,189,248,.15)';ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  for(let i=0;i<3000;i++)step();
+  ctx.fillStyle='#0A0F1A';ctx.fillRect(0,0,W,H);
+  draw();
+})();
+
+// Init sync indicator
+if(!APPS_SCRIPT_URL||APPS_SCRIPT_URL.includes('PEGA_AQUI')){
+  document.getElementById('sync-text').textContent='Configura Apps Script URL';
+} else {
+  document.getElementById('sync-dot').className='sync-dot saved';
+  document.getElementById('sync-text').textContent='Sheets conectado';
+}
+</script>
+</body>
+</html>
