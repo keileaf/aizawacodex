@@ -13,7 +13,7 @@
       --bg:#0A0F1A; --bg2:#0F1623; --bg3:#151E2E;
       --border:#1E2D42; --border2:#253649;
       --white:#F0F6FF; --gray1:#94A3B8; --gray2:#64748B; --gray3:#334155;
-      --green:#34D399; --red:#F87171; --amber:#FBBF24;
+      --green:#34D399; --red:#F87171; --amber:#FBBF24; --purple:#A78BFA;
       --mono:'Space Mono',monospace; --sans:'DM Sans',sans-serif;
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -42,123 +42,243 @@
     .stat-label{font-size:11px;font-family:var(--mono);color:var(--gray2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
     .stat-value{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--sky);line-height:1}
     .stat-sub{font-size:11px;color:var(--gray2);margin-top:4px}
-    .main-grid{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start}
+    .main-grid{display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:start}
     @media(max-width:960px){.main-grid{grid-template-columns:1fr}}
     .panel{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden}
     .panel-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);background:var(--bg3)}
     .panel-title{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--gray1);text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;gap:8px}
     .panel-title-dot{width:6px;height:6px;border-radius:50%;background:var(--sky)}
+    .panel-title-dot.purple{background:var(--purple)}
     .panel-actions{display:flex;gap:8px}
     .panel-action{font-size:11px;font-family:var(--mono);padding:4px 10px;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--gray1);cursor:pointer;transition:all .2s}
     .panel-action:hover{border-color:var(--sky-dim);color:var(--sky)}
 
-    /* TABS DE HISTORIAL */
     .tabs-bar{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--bg3);overflow-x:auto}
     .tab{font-family:var(--mono);font-size:11px;padding:10px 16px;cursor:pointer;color:var(--gray2);border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s;background:transparent;border-top:none;border-left:none;border-right:none}
     .tab:hover{color:var(--gray1)}
     .tab.active{color:var(--sky);border-bottom-color:var(--sky)}
-    .tab-content{display:none}
-    .tab-content.active{display:block}
 
-    /* FEED */
     .feed{max-height:520px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
     .feed::-webkit-scrollbar{width:4px}
     .feed::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
     .feed-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:var(--gray3);gap:12px;font-family:var(--mono);font-size:13px}
     .feed-empty-icon{font-size:32px;opacity:.4}
-
-    /* HORA SEPARADOR */
     .hour-separator{display:flex;align-items:center;gap:10px;padding:6px 4px;margin:4px 0}
     .hour-label{font-family:var(--mono);font-size:10px;color:var(--sky);font-weight:700;white-space:nowrap}
     .hour-line{flex:1;height:1px;background:linear-gradient(90deg,var(--sky-dark),transparent)}
 
-    /* MSG CARD */
-    .msg-card{border:1px solid var(--border);border-radius:10px;overflow:hidden;animation:slideIn .3s ease;transition:border-color .2s}
+    /* === CORREGIDO: msg-card con overflow:visible === */
+    .msg-card{
+      border:1px solid var(--border);
+      border-radius:10px;
+      overflow:visible;
+      animation:slideIn .3s ease;
+      transition:border-color .2s;
+      margin-bottom:12px;
+      background:var(--bg2);
+    }
     .msg-card:hover{border-color:var(--border2)}
+    .msg-card.sent{border-color:rgba(167,139,250,.25)}
+    .msg-card.sent:hover{border-color:rgba(167,139,250,.5)}
     @keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+    
     .msg-header{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--bg3);border-bottom:1px solid var(--border);gap:10px;flex-wrap:wrap}
     .msg-index{font-family:var(--mono);font-size:11px;color:var(--gray2)}
-    .msg-meta{display:flex;align-items:center;gap:10px}
+    .msg-badge{font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:999px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+    .msg-badge.rx{background:rgba(56,189,248,.1);color:var(--sky);border:1px solid rgba(56,189,248,.2)}
+    .msg-badge.tx{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.2)}
+    .msg-meta{display:flex;align-items:center;gap:8px}
     .msg-size{font-family:var(--mono);font-size:11px;color:var(--gray2)}
     .msg-timestamp{font-family:var(--mono);font-size:11px;color:var(--sky);font-weight:700}
-    .msg-body{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+    
+    /* === CORREGIDO: msg-body con overflow-x:auto === */
+    .msg-body{
+      padding:12px 14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      overflow-x:auto;
+    }
+    
     .msg-section-label{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px}
-    .label-enc{color:var(--red)} .label-dec{color:var(--green)} .label-meta{color:var(--sky)}
-    .hex-block{font-family:var(--mono);font-size:11px;color:var(--amber);background:rgba(251,191,36,.05);border:1px solid rgba(251,191,36,.15);border-radius:6px;padding:8px 10px;word-break:break-all;line-height:1.7}
-.plaintext-block{
-  font-family:var(--sans);
-  font-size:15px;
-  font-weight:600;
-
-  color:#D1FAE5;
-
-  background:
-    linear-gradient(
-      180deg,
-      rgba(16,185,129,.18),
-      rgba(5,150,105,.10)
-    );
-
-  border:1px solid rgba(52,211,153,.35);
-
-  border-left:4px solid #34D399;
-
-  border-radius:10px;
-
-  padding:12px 14px;
-
-  line-height:1.7;
-
-  word-break:break-word;
-  overflow-wrap:anywhere;
-
-  box-shadow:
-    0 0 12px rgba(52,211,153,.08);
-
-  width:100%;
-}    .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-    .meta-item{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 10px}
+    .label-enc{color:var(--red)} .label-dec{color:var(--green)} .label-meta{color:var(--sky)} .label-tx{color:var(--purple)}
+    
+    .dump-details {
+      background: #0A0F1A;
+      border-radius: 6px;
+      margin-top: 4px;
+    }
+    .dump-details summary {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--gray2);
+      cursor: pointer;
+      padding: 6px 8px;
+      background: var(--bg);
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+    .dump-details summary:hover {
+      background: var(--bg3);
+      color: var(--sky);
+    }
+    
+    /* === CORREGIDO: dump-block con scroll y max-height === */
+    .dump-block {
+      font-family: var(--mono);
+      font-size: 11px;
+      background: #0A0F1A;
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 8px;
+      overflow-x: auto;
+      overflow-y: auto;
+      max-height: 200px;
+      white-space: pre;
+      line-height: 1.5;
+      color: #B0E0FF;
+      margin-top: 6px;
+    }
+    .dump-offset { color: #64748B; }
+    .dump-hex { color: #FBBF24; }
+    .dump-ascii { color: #86EFAC; }
+    
+    /* === CORREGIDO: plaintext-block y senttext-block con white-space:pre-wrap === */
+    .plaintext-block, .senttext-block {
+      font-family: var(--sans);
+      font-size: 16px;
+      font-weight: 600;
+      padding: 14px 18px;
+      border-radius: 12px;
+      line-height: 1.6;
+      word-break: break-word;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      overflow-x: auto;
+      max-width: 100%;
+      display: block;
+      align-items: center;
+      gap: 12px;
+    }
+    .plaintext-block::before {
+      content: "🔓";
+      font-size: 20px;
+      opacity: 0.8;
+    }
+    .plaintext-block {
+      background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.08));
+      border: 1px solid rgba(52,211,153,0.5);
+      border-left: 6px solid #34D399;
+      color: #D1FAE5;
+    }
+    .senttext-block {
+      background: linear-gradient(135deg, rgba(167,139,250,0.15), rgba(124,58,237,0.08));
+      border: 1px solid rgba(167,139,250,0.5);
+      border-left: 6px solid var(--purple);
+      color: #EDE9FE;
+    }
+    .senttext-block::before {
+      content: "🔒";
+      font-size: 20px;
+      opacity: 0.8;
+    }
+    .error-block {
+      background: rgba(248,113,113,0.1);
+      border-left: 6px solid var(--red);
+      color: #FCA5A5;
+    }
+    .error-block::before {
+      content: "⚠️";
+    }
+    
+    .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+    
+    /* === CORREGIDO: meta-item y meta-val con mejor manejo de overflow === */
+    .meta-item{
+      background:var(--bg3);
+      border:1px solid var(--border);
+      border-radius:6px;
+      padding:6px 10px;
+      overflow-x:auto;
+      max-width:100%;
+      word-break:break-all;
+    }
     .meta-key{font-family:var(--mono);font-size:9px;color:var(--gray2);text-transform:uppercase;letter-spacing:1px}
-    .meta-val{font-family:var(--mono);font-size:10px;color:var(--sky);word-break:break-all;margin-top:2px}
+    .meta-val{
+      font-family:var(--mono);
+      font-size:10px;
+      color:var(--sky);
+      word-break:break-all;
+      margin-top:2px;
+      max-width:100%;
+      overflow-wrap:break-word;
+    }
 
-    /* HISTORIAL POR DÍA */
+    .publish-body{padding:16px}
+    .publish-input-wrap{display:flex;gap:10px;align-items:flex-end}
+    .publish-input{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:13px;color:var(--white);outline:none;transition:border-color .2s;resize:none;min-height:44px}
+    .publish-input:focus{border-color:var(--purple)}
+    .publish-input::placeholder{color:var(--gray3)}
+    .publish-btn{padding:10px 20px;background:linear-gradient(135deg,#7C3AED,var(--purple));border:none;border-radius:8px;color:#fff;font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0}
+    .publish-btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(167,139,250,.3)}
+    .publish-btn:active{transform:translateY(0)}
+    .publish-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+    .publish-status{font-family:var(--mono);font-size:11px;margin-top:8px;min-height:16px}
+    .publish-status.ok{color:var(--green)}
+    .publish-status.err{color:var(--red)}
+    .publish-status.sending{color:var(--amber)}
+
     .history-day{margin-bottom:20px}
     .day-header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:8px 8px 0 0;cursor:pointer}
     .day-title{font-family:var(--mono);font-size:12px;color:var(--sky);font-weight:700}
     .day-count{font-family:var(--mono);font-size:10px;color:var(--gray2)}
-    .day-arrow{margin-left:auto;color:var(--gray2);font-size:10px;transition:transform .2s}
+    .day-arrow{margin-left:auto;color:var(--gray2);font-size:10px}
     .day-body{border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden}
     .day-body.collapsed{display:none}
+    .history-card{margin:8px}
 
-    /* SIDEBAR */
     .sidebar{display:flex;flex-direction:column;gap:20px}
+    .canvas-wrap{position:relative;background:#040810}
     #aizawa-canvas{width:100%;aspect-ratio:1;display:block}
-    .canvas-wrap{position:relative}
-    .canvas-overlay{position:absolute;bottom:10px;left:12px;font-family:var(--mono);font-size:10px;color:var(--sky);opacity:.7;pointer-events:none}
+    .canvas-overlay{position:absolute;bottom:10px;left:12px;font-family:var(--mono);font-size:9px;color:rgba(56,189,248,.5);pointer-events:none;line-height:1.8}
+    .canvas-fps{position:absolute;top:10px;right:12px;font-family:var(--mono);font-size:9px;color:rgba(56,189,248,.3);pointer-events:none}
     .info-list{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
     .info-row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding-bottom:10px;border-bottom:1px solid var(--border)}
     .info-row:last-child{border-bottom:none;padding-bottom:0}
     .info-key{font-family:var(--mono);font-size:11px;color:var(--gray2);flex-shrink:0}
     .info-val{font-family:var(--mono);font-size:11px;color:var(--white);text-align:right;word-break:break-all}
     .info-val.green{color:var(--green)} .info-val.sky{color:var(--sky)}
-
     footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);text-align:center;font-family:var(--mono);font-size:11px;color:var(--gray2)}
     footer a{color:var(--sky);text-decoration:none}
     ::-webkit-scrollbar{width:5px;height:5px}
     ::-webkit-scrollbar-track{background:var(--bg)}
     ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
-
     .sync-indicator{font-family:var(--mono);font-size:10px;color:var(--gray2);display:flex;align-items:center;gap:6px}
     .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--gray3)}
     .sync-dot.saving{background:var(--amber);animation:pulse 1s infinite}
     .sync-dot.saved{background:var(--green)}
+    
+    /* === NUEVO: Responsive para móviles === */
+    @media(max-width:600px){
+      .msg-body{ padding:10px; }
+      .plaintext-block, .senttext-block{
+        font-size:14px;
+        padding:10px 12px;
+      }
+      .dump-block{
+        font-size:10px;
+        max-height:150px;
+      }
+      .meta-grid{ grid-template-columns:1fr; }
+      .meta-item{ grid-column: span 1 !important; }
+    }
   </style>
 </head>
 <body>
 <div class="bg-grid"></div>
 <div class="bg-glow"></div>
-
 <div class="app">
+
   <header>
     <div class="header-left">
       <div class="logo-icon">⬡</div>
@@ -180,86 +300,59 @@
   </header>
 
   <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-label">Mensajes</div>
-      <div class="stat-value" id="stat-total">0</div>
-      <div class="stat-sub">en esta sesión</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Descifrados</div>
-      <div class="stat-value" id="stat-ok" style="color:var(--green)">0</div>
-      <div class="stat-sub">exitosos</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Bytes totales</div>
-      <div class="stat-value" id="stat-bytes">0</div>
-      <div class="stat-sub">recibidos</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Historial</div>
-      <div class="stat-value" id="stat-history">0</div>
-      <div class="stat-sub">guardados en Sheets</div>
-    </div>
+    <div class="stat-card"><div class="stat-label">Recibidos</div><div class="stat-value" id="stat-total">0</div><div class="stat-sub">en esta sesión</div></div>
+    <div class="stat-card"><div class="stat-label">Descifrados</div><div class="stat-value" id="stat-ok" style="color:var(--green)">0</div><div class="stat-sub">exitosos</div></div>
+    <div class="stat-card"><div class="stat-label">Publicados</div><div class="stat-value" id="stat-sent" style="color:var(--purple)">0</div><div class="stat-sub">desde el sitio</div></div>
+    <div class="stat-card"><div class="stat-label">Historial</div><div class="stat-value" id="stat-history">0</div><div class="stat-sub">en Sheets</div></div>
   </div>
 
   <div class="main-grid">
     <div style="display:flex;flex-direction:column;gap:20px">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><div class="panel-title-dot purple"></div>Publicar mensaje cifrado</div>
+          <span style="font-family:var(--mono);font-size:10px;color:var(--gray2)">→ aizawa/secure</span>
+        </div>
+        <div class="publish-body">
+          <div class="publish-input-wrap">
+            <input id="publish-input" class="publish-input" type="text" placeholder="Escribe un mensaje para cifrar y publicar..." maxlength="200" onkeydown="if(event.key==='Enter')publishMessage()" />
+            <button class="publish-btn" id="publish-btn" onclick="publishMessage()">⬡ Enviar</button>
+          </div>
+          <div class="publish-status" id="publish-status"></div>
+        </div>
+      </div>
 
-      <!-- FEED EN VIVO -->
       <div class="panel">
         <div class="panel-header">
           <div class="panel-title"><div class="panel-title-dot"></div>Feed en vivo</div>
-          <div class="panel-actions">
-            <button class="panel-action" onclick="clearFeed()">Limpiar</button>
-          </div>
+          <div class="panel-actions"><button class="panel-action" onclick="clearFeed()">Limpiar</button></div>
         </div>
         <div class="feed" id="feed">
           <div class="feed-empty" id="feed-empty">
-            <div class="feed-empty-icon">📡</div>
-            <span>Esperando mensajes...</span>
-            <span style="font-size:10px;color:var(--gray3)">topic: aizawa/secure</span>
+            <div class="feed-empty-icon">📡</div><span>Esperando mensajes...</span><span style="font-size:10px;color:var(--gray3)">topic: aizawa/secure</span>
           </div>
         </div>
       </div>
 
-      <!-- HISTORIAL -->
       <div class="panel">
         <div class="panel-header">
           <div class="panel-title"><div class="panel-title-dot"></div>Historial</div>
-          <div class="panel-actions">
-            <button class="panel-action" onclick="loadHistory()">↻ Actualizar</button>
-          </div>
+          <div class="panel-actions"><button class="panel-action" onclick="loadHistory()">↻ Actualizar</button></div>
         </div>
-        <div class="tabs-bar" id="history-tabs">
-          <button class="tab active" onclick="switchTab('all',this)">Todo</button>
-        </div>
+        <div class="tabs-bar" id="history-tabs"><button class="tab active" onclick="switchTab('all',this)">Todo</button></div>
         <div id="history-container" style="max-height:480px;overflow-y:auto;padding:12px">
-          <div class="feed-empty">
-            <div class="feed-empty-icon">📋</div>
-            <span style="font-size:12px">Configura el Apps Script URL para ver el historial</span>
-          </div>
+          <div class="feed-empty"><div class="feed-empty-icon">📋</div><span style="font-size:12px">Configura el Apps Script URL para ver el historial</span></div>
         </div>
       </div>
-
     </div>
 
-    <!-- SIDEBAR -->
     <div class="sidebar">
       <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title"><div class="panel-title-dot"></div>Atractor de Aizawa</div>
-          <span style="font-size:10px;font-family:var(--mono);color:var(--gray2)">3D live</span>
-        </div>
-        <div class="canvas-wrap">
-          <canvas id="aizawa-canvas" width="340" height="340"></canvas>
-          <div class="canvas-overlay">a=0.95 b=0.7 c=0.6 d=3.5</div>
-        </div>
+        <div class="panel-header"><div class="panel-title"><div class="panel-title-dot"></div>Atractor de Aizawa</div><span id="canvas-fps" style="font-size:10px;font-family:var(--mono);color:var(--gray2)">3D live</span></div>
+        <div class="canvas-wrap"><canvas id="aizawa-canvas" width="360" height="360"></canvas><div class="canvas-overlay">a=0.95 · b=0.7 · c=0.6<br>d=3.5 · e=0.25 · f=0.1</div></div>
       </div>
-
       <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title"><div class="panel-title-dot"></div>Sistema</div>
-        </div>
+        <div class="panel-header"><div class="panel-title"><div class="panel-title-dot"></div>Sistema</div></div>
         <div class="info-list">
           <div class="info-row"><span class="info-key">Broker</span><span class="info-val sky">broker.hivemq.com</span></div>
           <div class="info-row"><span class="info-key">Topic</span><span class="info-val sky">aizawa/secure</span></div>
@@ -272,21 +365,15 @@
       </div>
     </div>
   </div>
-
-  <footer>
-    Aizawa Secure Monitor &mdash; UABC IoT Security &mdash;
-    <a href="https://github.com" target="_blank">GitHub</a>
-  </footer>
+  <footer>Aizawa Secure Monitor &mdash; UABC IoT Security &mdash; <a href="https://github.com" target="_blank">GitHub</a></footer>
 </div>
 
 <script>
-/* ════════ CONFIGURACIÓN ════════ */
-// Después de publicar el Apps Script como Web App, pega la URL aquí:
+/* ══════════════════════════════════════════════ CONFIGURACIÓN ══════════════════════════════════════════════ */
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzG5urzMOeWO5XkingRxcqA2Cj_Yzo3FBlcUPeTTQFR9l-38NtgdZbHCmqN0A4FPNRwPw/exec';
 
-/* ════════ AIZAWA Q32 con BigInt ════════ */
-const Q32=BigInt("4294967296"),MASK64=BigInt("0xFFFFFFFFFFFFFFFF"),
-      SIGN64=BigInt("0x8000000000000000"),MOD64=BigInt("0x10000000000000000");
+/* ══════════════════════════════════════════════ AIZAWA Q32 con BigInt ══════════════════════════════════════════════ */
+const Q32=BigInt("4294967296"),MASK64=BigInt("0xFFFFFFFFFFFFFFFF"),SIGN64=BigInt("0x8000000000000000"),MOD64=BigInt("0x10000000000000000");
 function toInt64(v){v=((v%MOD64)+MOD64)%MOD64;if(v>=SIGN64)v-=MOD64;return v}
 function toUint64(v){return((v%MOD64)+MOD64)%MOD64}
 function mulQ32(a,b){return toInt64(toInt64(toInt64(a)*toInt64(b))>>32n)}
@@ -298,10 +385,34 @@ const PA=toInt64(BigInt(Math.trunc(.95*Number(Q32)))),PB=toInt64(BigInt(Math.tru
       PH=toInt64(BigInt(Math.trunc(.005*Number(Q32))));
 const SM1=BigInt("0xBF58476D1CE4E5B9"),SM2=BigInt("0x94D049BB133111EB");
 let sx=0n,sy=0n,sz=0n;
-function aizawaInit(s1,s2){sx=toInt64(toUint64(s1)^BigInt("0x123456789ABCDEF0"));sy=toInt64(toUint64(s2)^BigInt("0x0FEDCBA987654321"));sz=toInt64(toUint64(toUint64(s1<<1n)^toUint64(s2>>1n)^BigInt("0xA5A5A5A5A5A5A5A5")))}
-function aizawaStep(){const dx=toInt64(mulQ32(toInt64(sz-PB),sx)-mulQ32(PD,sy)),dy=toInt64(mulQ32(PD,sx)+mulQ32(toInt64(sz-PB),sy)),z2=mulQ32(sz,sz),z3=divTrunc(mulQ32(z2,sz),3n),term=mulQ32(toInt64(mulQ32(sx,sx)+mulQ32(sy,sy)),toInt64(Q32+mulQ32(PE,sz))),dz=toInt64(PC+mulQ32(PA,sz)-z3-term+mulQ32(mulQ32(PF,sz),mulQ32(mulQ32(sx,sx),sx)));sx=toInt64(sx+mulQ32(PH,dx));sy=toInt64(sy+mulQ32(PH,dy));sz=toInt64(sz+mulQ32(PH,dz))}
-function chaosByte(){aizawaStep();let m=toUint64(toUint64(sx)^rotl64(sy,17)^rotl64(sz,41));m^=m>>30n;m=toUint64(m*SM1);m^=m>>27n;m=toUint64(m*SM2);m^=m>>31n;return Number(m&0xFFn)}
-async function deriveKey(s1,s2){aizawaInit(s1,s2);for(let i=0;i<3000;i++)aizawaStep();const p=new Uint8Array(128);for(let i=0;i<128;i++)p[i]=chaosByte();return new Uint8Array(await crypto.subtle.digest('SHA-256',p))}
+function aizawaInit(s1,s2){sx=toInt64(toUint64(s1)^BigInt("0x123456789ABCDEF0"));sy=toInt64(toUint64(s2)^BigInt("0x0FEDCBA987654321"));sz=toInt64(toUint64(toUint64(s1<<1n)^toUint64(s2>>1n)^BigInt("0xA5A5A5A5A5A5A5A5")));}
+function aizawaStep(){const dx=toInt64(mulQ32(toInt64(sz-PB),sx)-mulQ32(PD,sy)),dy=toInt64(mulQ32(PD,sx)+mulQ32(toInt64(sz-PB),sy)),z2=mulQ32(sz,sz),z3=divTrunc(mulQ32(z2,sz),3n),term=mulQ32(toInt64(mulQ32(sx,sx)+mulQ32(sy,sy)),toInt64(Q32+mulQ32(PE,sz))),dz=toInt64(PC+mulQ32(PA,sz)-z3-term+mulQ32(mulQ32(PF,sz),mulQ32(mulQ32(sx,sx),sx)));sx=toInt64(sx+mulQ32(PH,dx));sy=toInt64(sy+mulQ32(PH,dy));sz=toInt64(sz+mulQ32(PH,dz));}
+function chaosByte(){aizawaStep();let m=toUint64(toUint64(sx)^rotl64(sy,17)^rotl64(sz,41));m^=m>>30n;m=toUint64(m*SM1);m^=m>>27n;m=toUint64(m*SM2);m^=m>>31n;return Number(m&0xFFn);}
+async function deriveKey(s1,s2){aizawaInit(s1,s2);for(let i=0;i<3000;i++)aizawaStep();const p=new Uint8Array(128);for(let i=0;i<128;i++)p[i]=chaosByte();return new Uint8Array(await crypto.subtle.digest('SHA-256',p));}
+
+/* ══════════════════════════════════════════════ CIFRADO (para publicar desde el sitio) ══════════════════════════════════════════════ */
+async function encryptMessage(text) {
+  const s1bytes = crypto.getRandomValues(new Uint8Array(8));
+  const s2bytes = crypto.getRandomValues(new Uint8Array(8));
+  const v1 = new DataView(s1bytes.buffer), v2 = new DataView(s2bytes.buffer);
+  const seed1 = v1.getBigUint64(0, true);
+  const seed2 = v2.getBigUint64(0, true);
+  const keyBytes = await deriveKey(seed1, seed2);
+  const nonce = crypto.getRandomValues(new Uint8Array(12));
+  const plaintext = new TextEncoder().encode(text);
+  const ck = await crypto.subtle.importKey('raw', keyBytes, {name:'AES-GCM'}, false, ['encrypt']);
+  const encrypted = await crypto.subtle.encrypt({name:'AES-GCM', iv:nonce, tagLength:128}, ck, plaintext);
+  const encBytes = new Uint8Array(encrypted);
+  const ciphertext = encBytes.slice(0, encBytes.length - 16);
+  const tag = encBytes.slice(encBytes.length - 16);
+  const total = 8 + 8 + 12 + ciphertext.length + 16;
+  const packet = new Uint8Array(total);
+  packet.set(s1bytes, 0); packet.set(s2bytes, 8); packet.set(nonce, 16);
+  packet.set(ciphertext, 28); packet.set(tag, 28 + ciphertext.length);
+  return { packet, seed1, seed2, nonce, ciphertext, tag, keyBytes };
+}
+
+/* ══════════════════════════════════════════════ DESCIFRADO ══════════════════════════════════════════════ */
 async function decryptMsg(raw){
   if(raw.length<45)return null;
   const v=new DataView(raw.buffer,raw.byteOffset);
@@ -316,522 +427,291 @@ async function decryptMsg(raw){
   }catch{return null}
 }
 
-/* ════════ UTILS ════════ */
+/* ══════════════════════════════════════════════ FORMATO DUMP HEXADECIMAL (estilo xxd) ══════════════════════════════════════════════ */
+function hexDump(bytes, maxLines = 12) {
+  if (!bytes || bytes.length === 0) return '(vacío)';
+  const lines = [];
+  const bytesPerLine = 16;
+  const totalLines = Math.min(Math.ceil(bytes.length / bytesPerLine), maxLines);
+  let truncated = bytes.length > totalLines * bytesPerLine;
+  for (let i = 0; i < totalLines; i++) {
+    const offset = i * bytesPerLine;
+    const hexParts = [];
+    const asciiParts = [];
+    for (let j = 0; j < bytesPerLine; j++) {
+      const idx = offset + j;
+      if (idx < bytes.length) {
+        const byte = bytes[idx];
+        hexParts.push(byte.toString(16).padStart(2, '0'));
+        asciiParts.push(byte >= 32 && byte <= 126 ? String.fromCharCode(byte) : '.');
+      } else {
+        hexParts.push('  ');
+        asciiParts.push(' ');
+      }
+    }
+    const offsetStr = offset.toString(16).padStart(8, '0');
+    const hexStr = hexParts.join('');
+    const hexGrouped = hexStr.match(/.{1,4}/g)?.join(' ') || '';
+    const asciiStr = asciiParts.join('');
+    lines.push(`<span class="dump-offset">${offsetStr}:</span> <span class="dump-hex">${hexGrouped.padEnd(49)}</span> <span class="dump-ascii">${asciiStr}</span>`);
+  }
+  if (truncated) lines.push(`<span class="dump-offset">...</span> <span class="dump-hex">(${bytes.length - totalLines*bytesPerLine} bytes más)</span>`);
+  return lines.join('\n');
+}
+
+/* ══════════════════════════════════════════════ UTILS ══════════════════════════════════════════════ */
 function toHex(b){return Array.from(b).map(x=>x.toString(16).padStart(2,'0')).join('')}
-function fmtHex(b,max=40){const h=toHex(b.slice(0,max));return b.length>max?h+`…+${b.length-max}B`:h}
 function readU64LE(b,o){let h='';for(let i=7;i>=0;i--)h+=b[o+i].toString(16).padStart(2,'0');return h.toUpperCase()}
 function fmtTime(d){return d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
 function fmtDate(d){return d.toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}
-function dayKey(d){return d.toISOString().slice(0,10)}
-function hourKey(d){return d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}).slice(0,5).replace(':','') < '0000' ? '00:00' : d.toLocaleTimeString('es-MX',{hour:'2-digit',hour12:false}).slice(0,2)+':00'}
+function escapeHtml(str){if(!str)return '';return str.replace(/[&<>]/g,function(m){if(m==='&')return '&amp;';if(m==='<')return '&lt;';if(m==='>')return '&gt;';return m;});}
 
-/* ════════ ESTADÍSTICAS ════════ */
-let totalMsg=0,okMsg=0,totalBytes=0,historyTotal=0;
-function updateStats(bytes,ok){
-  totalMsg++;totalBytes+=bytes;if(ok)okMsg++;
-  document.getElementById('stat-total').textContent=totalMsg;
-  document.getElementById('stat-ok').textContent=okMsg;
-  document.getElementById('stat-bytes').textContent=totalBytes>=1024?(totalBytes/1024).toFixed(1)+' KB':totalBytes+' B';
+/* ══════════════════════════════════════════════ ESTADÍSTICAS ══════════════════════════════════════════════ */
+let totalMsg=0,okMsg=0,sentMsg=0,historyTotal=0,totalBytes=0;
+function updateStats(bytes,ok){ totalMsg++; totalBytes+=bytes; if(ok)okMsg++; document.getElementById('stat-total').textContent=totalMsg; document.getElementById('stat-ok').textContent=okMsg; }
+
+/* ══════════════════════════════════════════════ SHEETS — GUARDAR ══════════════════════════════════════════════ */
+async function saveToSheets(data){
+  if(!APPS_SCRIPT_URL||APPS_SCRIPT_URL.includes('PEGA_AQUI'))return;
+  const dot=document.getElementById('sync-dot'),txt=document.getElementById('sync-text');
+  dot.className='sync-dot saving';txt.textContent='Guardando...';
+  try{
+    await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({api_key:'AIZAWA_SECURE_2026',...data})});
+    dot.className='sync-dot saved';txt.textContent='Sincronizado ✓';
+    historyTotal++; document.getElementById('stat-history').textContent=historyTotal;
+  }catch(e){ dot.className='sync-dot'; txt.textContent='Error Sheets'; }
 }
 
-/* ════════ SHEETS — GUARDAR ════════ */async function saveToSheets(data)
-{
-  // Si no hay URL configurada
-  if (
-    !APPS_SCRIPT_URL ||
-    APPS_SCRIPT_URL.includes('PEGA_AQUI')
-  )
-  {
-    return;
-  }
-
-  try
-  {
-    document
-      .getElementById('sync-dot')
-      .className =
-      'sync-dot saving';
-
-    document
-      .getElementById('sync-text')
-      .textContent =
-      'Guardando...';
-
-    const response =
-      await fetch(
-        APPS_SCRIPT_URL,
-        {
-          method: 'POST',
-          mode: 'cors',
-
-          headers:
-          {
-            'Content-Type':
-            'text/plain'
-          },
-
-          body:
-            JSON.stringify({
-              api_key:
-                'AIZAWA_SECURE_2026',
-
-              hex_raw:
-                data.hex_raw || '',
-
-              texto:
-                data.texto || '',
-
-              seed1:
-                data.seed1 || '',
-
-              seed2:
-                data.seed2 || '',
-
-              nonce:
-                data.nonce || '',
-
-              bytes:
-                data.bytes || 0,
-
-              ok:
-                data.ok || false
-            })
-        }
-      );
-
-    const text =
-      await response.text();
-
-    console.log(
-      'Sheets response:',
-      text
-    );
-
-    document
-      .getElementById('sync-dot')
-      .className =
-      'sync-dot saved';
-
-    document
-      .getElementById('sync-text')
-      .textContent =
-      'Sincronizado ✓';
-  }
-  catch(err)
-  {
-    console.error(
-      'ERROR SHEETS:',
-      err
-    );
-
-    document
-      .getElementById('sync-dot')
-      .className =
-      'sync-dot';
-
-    document
-      .getElementById('sync-text')
-      .textContent =
-      'Error Sheets';
-  }
-}
-
-/* ════════ SHEETS — CARGAR HISTORIAL ════════ */
+/* ══════════════════════════════════════════════ SHEETS — CARGAR HISTORIAL ══════════════════════════════════════════════ */
 async function loadHistory(){
   if(!APPS_SCRIPT_URL||APPS_SCRIPT_URL.includes('PEGA_AQUI'))return;
   const container=document.getElementById('history-container');
-  container.innerHTML='<div class="feed-empty"><div class="feed-empty-icon" style="animation:pulse 1s infinite">⟳</div><span>Cargando historial...</span></div>';
+  container.innerHTML='<div class="feed-empty"><div class="feed-empty-icon">⟳</div><span>Cargando historial...</span></div>';
   try{
     const res=await fetch(APPS_SCRIPT_URL+'?t='+Date.now());
     const json=await res.json();
-    if(!json.ok||!json.data.length){container.innerHTML='<div class="feed-empty"><div class="feed-empty-icon">📭</div><span>Sin mensajes guardados</span></div>';return;}
-    historyTotal=json.total;
-    document.getElementById('stat-history').textContent=historyTotal;
+    if(!json.ok||!json.data.length){ container.innerHTML='<div class="feed-empty"><div class="feed-empty-icon">📭</div><span>Sin mensajes guardados</span></div>'; return; }
+    historyTotal=json.total; document.getElementById('stat-history').textContent=historyTotal;
     renderHistory(json.data);
     preloadLiveFeed(json.data);
-  }catch(e){
-    container.innerHTML='<div class="feed-empty"><div class="feed-empty-icon">⚠</div><span>Error al cargar historial</span></div>';
-  }
+  }catch(e){ container.innerHTML='<div class="feed-empty"><div class="feed-empty-icon">⚠</div><span>Error al cargar historial</span></div>'; }
 }
 
-function preloadLiveFeed(rows)
-{
-  const feed =
-    document.getElementById('feed');
-
-  feed.innerHTML = '';
-
-  // Últimos 2 mensajes
-  const latest =
-    rows
-      .slice(0,2)
-      .reverse();
-
-  latest.forEach((r,index)=>
-  {
-    const ts =
-      r.timestamp;
-
-    const hour =
-      ts.slice(11,13) + ':00';
-
-    // Separador hora
-    const sep =
-      document.createElement('div');
-
-    sep.className =
-      'hour-separator';
-
-    sep.innerHTML =
-      `
-      <span class="hour-label">
-        🕐 ${hour} hrs — ${ts.slice(0,10)}
-      </span>
-
-      <div class="hour-line"></div>
-      `;
-
+function preloadLiveFeed(rows){
+  const feed=document.getElementById('feed');
+  feed.innerHTML='';
+  rows.slice(0,3).reverse().forEach((r,i)=>{
+    const sep=document.createElement('div');sep.className='hour-separator';
+    sep.innerHTML=`<span class="hour-label">🕐 ${r.timestamp.slice(11,16)} — ${r.timestamp.slice(0,10)}</span><div class="hour-line"></div>`;
     feed.appendChild(sep);
-
-    // Tarjeta
-    const card =
-      document.createElement('div');
-
-    card.className =
-      'msg-card';
-
-    card.innerHTML =
-      `
-      <div class="msg-header">
-        <span class="msg-index">
-          #PRELOAD-${index+1}
-        </span>
-
-        <div class="msg-meta">
-          <span class="msg-size">
-            ${r.bytes} bytes
-          </span>
-
-          <span class="msg-timestamp">
-            ${ts.slice(11,19)}
-          </span>
-        </div>
-      </div>
-
-      <div class="msg-body">
-
-        <div>
-          <div class="msg-section-label label-enc">
-            ⬡ Último tráfico cifrado
-          </div>
-
-          <div class="hex-block">
-            ${r.hex_raw || '---'}
-          </div>
-        </div>
-
-        <div>
-          <div class="msg-section-label label-dec">
-            ✓ Último mensaje descifrado
-          </div>
-
-          <div class="plaintext-block">
-            ${r.texto || '---'}
-          </div>
-        </div>
-
-      </div>
-      `;
-
+    
+    const card=document.createElement('div');card.className='msg-card';
+    let dumpHtml='';
+    if(r.hex_raw){
+      try{
+        const bytes=new Uint8Array(r.hex_raw.match(/.{1,2}/g).map(b=>parseInt(b,16)));
+        dumpHtml=`<details class="dump-details"><summary>📄 Ver volcado hexadecimal (${bytes.length} bytes)</summary><div class="dump-block">${hexDump(bytes,8)}</div></details>`;
+      }catch(e){ dumpHtml=`<div class="hex-block">${r.hex_raw}</div>`; }
+    } else { dumpHtml=''; }
+    
+    const msgOk = r.ok === '✓';
+    const textClass = msgOk ? 'plaintext-block' : 'plaintext-block error-block';
+    const displayText = msgOk ? escapeHtml(r.texto) : escapeHtml(r.texto || 'Descifrado fallido');
+    
+    card.innerHTML=`<div class="msg-header"><span class="msg-index">HISTORIAL</span><div class="msg-meta"><span class="msg-badge rx">RX</span><span class="msg-size">${r.bytes} bytes</span><span class="msg-timestamp">${r.timestamp.slice(11,19)}</span></div></div><div class="msg-body"><div><div class="msg-section-label label-dec">🔓 Texto descifrado</div><div class="${textClass}">${displayText}</div></div><div><div class="msg-section-label label-enc">⬡ Cifrado (dump colapsable)</div>${dumpHtml}</div><div class="meta-grid"><div class="meta-item"><div class="meta-key">seed1</div><div class="meta-val">${r.seed1}</div></div><div class="meta-item"><div class="meta-key">seed2</div><div class="meta-val">${r.seed2}</div></div><div class="meta-item" style="grid-column:span 2"><div class="meta-key">nonce</div><div class="meta-val">${r.nonce}</div></div></div></div>`;
     feed.appendChild(card);
   });
 }
 
 function renderHistory(rows){
-  // Agrupar por día
   const byDay={};
-  rows.forEach(r=>{
-    const d=r.timestamp.slice(0,10);
-    if(!byDay[d])byDay[d]=[];
-    byDay[d].push(r);
-  });
-
-  // Tabs de días
+  rows.forEach(r=>{const d=r.timestamp.slice(0,10);if(!byDay[d])byDay[d]=[];byDay[d].push(r)});
   const tabsBar=document.getElementById('history-tabs');
   tabsBar.innerHTML='<button class="tab active" onclick="switchTab(\'all\',this)">Todo</button>';
-  Object.keys(byDay).sort().reverse().forEach(day=>{
-    const btn=document.createElement('button');
-    btn.className='tab';
-    btn.textContent=day;
-    btn.onclick=function(){switchTab(day,this)};
-    tabsBar.appendChild(btn);
-  });
-
-  // Contenido agrupado por día → hora
-  const container=document.getElementById('history-container');
-  container.innerHTML='';
-
+  Object.keys(byDay).sort().reverse().forEach(day=>{const btn=document.createElement('button');btn.className='tab';btn.textContent=day;btn.onclick=function(){switchTab(day,this)};tabsBar.appendChild(btn);});
+  const container=document.getElementById('history-container');container.innerHTML='';
   Object.keys(byDay).sort().reverse().forEach(day=>{
     const dayRows=byDay[day];
-
-    // Agrupar por hora
     const byHour={};
-    dayRows.forEach(r=>{
-      const h=r.timestamp.slice(11,13)+':00';
-      if(!byHour[h])byHour[h]=[];
-      byHour[h].push(r);
-    });
-
-    const dayDiv=document.createElement('div');
-    dayDiv.className='history-day';
-    dayDiv.dataset.day=day;
-
+    dayRows.forEach(r=>{const h=r.timestamp.slice(11,13)+':00';if(!byHour[h])byHour[h]=[];byHour[h].push(r)});
+    const dayDiv=document.createElement('div');dayDiv.className='history-day';dayDiv.dataset.day=day;
     const d=new Date(day+'T12:00:00');
     const dayLabel=d.toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-
-    dayDiv.innerHTML=`
-      <div class="day-header" onclick="toggleDay(this)">
-        <span style="font-size:16px">📅</span>
-        <span class="day-title">${dayLabel}</span>
-        <span class="day-count">${dayRows.length} msgs</span>
-        <span class="day-arrow">▼</span>
-      </div>
-      <div class="day-body" id="day-${day}"></div>
-    `;
-
+    dayDiv.innerHTML=`<div class="day-header" onclick="toggleDay(this)"><span style="font-size:16px">📅</span><span class="day-title">${dayLabel}</span><span class="day-count">${dayRows.length} msgs</span><span class="day-arrow">▼</span></div><div class="day-body" id="day-${day}"></div>`;
     const dayBody=dayDiv.querySelector('.day-body');
-
     Object.keys(byHour).sort().reverse().forEach(hour=>{
       const hourRows=byHour[hour];
-      // Separador de hora
-      const sep=document.createElement('div');
-      sep.className='hour-separator';
+      const sep=document.createElement('div');sep.className='hour-separator';
       sep.innerHTML=`<span class="hour-label">🕐 ${hour} hrs</span><div class="hour-line"></div><span style="font-family:var(--mono);font-size:10px;color:var(--gray2)">${hourRows.length} msgs</span>`;
       dayBody.appendChild(sep);
-
-      // Mensajes de esa hora
       hourRows.forEach((r,i)=>{
-        const card=document.createElement('div');
-        card.className='msg-card';
-        card.style.marginBottom='8px';
-        const ts=r.timestamp.slice(11,19);
-        card.innerHTML=`
-          <div class="msg-header">
-            <span class="msg-index">#${String(i+1).padStart(3,'0')}</span>
-            <div class="msg-meta">
-              <span class="msg-size">${r.bytes} bytes</span>
-              <span class="msg-timestamp">${ts}</span>
-            </div>
-          </div>
-          <div class="msg-body">
-            <div>
-              <div class="msg-section-label label-enc">⬡ Tráfico cifrado</div>
-              <div class="hex-block">${r.hex_raw||'—'}</div>
-            </div>
-            <div>
-              <div class="msg-section-label label-dec">✓ Mensaje descifrado</div>
-              ${r.ok==='✓'
-                ?`<div class="plaintext-block">${r.texto}</div>`
-                :`<div class="plaintext-block" style="color:var(--red);background:rgba(248,113,113,.07);border-color:rgba(248,113,113,.2)">${r.texto}</div>`
-              }
-            </div>
-            <div class="meta-grid">
-              <div class="meta-item"><div class="meta-key">seed1</div><div class="meta-val">${r.seed1}</div></div>
-              <div class="meta-item"><div class="meta-key">seed2</div><div class="meta-val">${r.seed2}</div></div>
-              <div class="meta-item" style="grid-column:span 2"><div class="meta-key">nonce</div><div class="meta-val">${r.nonce}</div></div>
-            </div>
-          </div>
-        `;
+        let dumpHtml='';
+        if(r.hex_raw){
+          try{
+            const bytes=new Uint8Array(r.hex_raw.match(/.{1,2}/g).map(b=>parseInt(b,16)));
+            dumpHtml=`<details class="dump-details"><summary>📄 Ver dump (${bytes.length} bytes)</summary><div class="dump-block">${hexDump(bytes,6)}</div></details>`;
+          }catch(e){ dumpHtml=`<div class="hex-block">${r.hex_raw}</div>`; }
+        } else { dumpHtml=''; }
+        const msgOk = r.ok === '✓';
+        const textClass = msgOk ? 'plaintext-block' : 'plaintext-block error-block';
+        const displayText = msgOk ? escapeHtml(r.texto) : escapeHtml(r.texto || 'Descifrado fallido');
+        const card=document.createElement('div');card.className='msg-card';card.style.marginBottom='12px';
+        card.innerHTML=`<div class="msg-header"><span class="msg-index">#${String(i+1).padStart(3,'0')}</span><div class="msg-meta"><span class="msg-badge rx">RX</span><span class="msg-size">${r.bytes} bytes</span><span class="msg-timestamp">${r.timestamp.slice(11,19)}</span></div></div><div class="msg-body"><div><div class="msg-section-label label-dec">🔓 Texto descifrado</div><div class="${textClass}">${displayText}</div></div><div><div class="msg-section-label label-enc">⬡ Cifrado (dump colapsable)</div>${dumpHtml}</div><div class="meta-grid"><div class="meta-item"><div class="meta-key">seed1</div><div class="meta-val">${r.seed1}</div></div><div class="meta-item"><div class="meta-key">seed2</div><div class="meta-val">${r.seed2}</div></div><div class="meta-item" style="grid-column:span 2"><div class="meta-key">nonce</div><div class="meta-val">${r.nonce}</div></div></div></div>`;
         dayBody.appendChild(card);
       });
     });
-
     container.appendChild(dayDiv);
   });
 }
+function toggleDay(h){const b=h.nextElementSibling,a=h.querySelector('.day-arrow');b.classList.toggle('collapsed');a.textContent=b.classList.contains('collapsed')?'▶':'▼';}
+function switchTab(day,btn){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.history-day').forEach(d=>{d.style.display=(day==='all'||d.dataset.day===day)?'block':'none';});}
 
-function toggleDay(header){
-  const body=header.nextElementSibling;
-  const arrow=header.querySelector('.day-arrow');
-  body.classList.toggle('collapsed');
-  arrow.textContent=body.classList.contains('collapsed')?'▶':'▼';
-}
-
-function switchTab(day,btn){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('.history-day').forEach(d=>{
-    d.style.display=(day==='all'||d.dataset.day===day)?'block':'none';
-  });
-}
-
-/* ════════ FEED EN VIVO ════════ */
+/* ══════════════════════════════════════════════ FEED EN VIVO con DUMP COLAPSABLE Y TEXTO DESTACADO ══════════════════════════════════════════════ */
 let msgCount=0,lastHour='';
-async function addMessage(rawBytes){
+
+async function addMessage(rawBytes, isSent=false, sentText=''){
   msgCount++;
   const now=new Date();
   const ts=fmtTime(now);
   const currentHour=now.getHours().toString().padStart(2,'0')+':00';
-
   const feed=document.getElementById('feed');
   const empty=document.getElementById('feed-empty');
   if(empty)empty.remove();
 
-  // Separador de hora en el feed
   if(currentHour!==lastHour){
     lastHour=currentHour;
-    const sep=document.createElement('div');
-    sep.className='hour-separator';
-    sep.innerHTML=`<span class="hour-label">🕐 ${currentHour} hrs &mdash; ${fmtDate(now)}</span><div class="hour-line"></div>`;
+    const sep=document.createElement('div');sep.className='hour-separator';
+    sep.innerHTML=`<span class="hour-label">🕐 ${currentHour} hrs — ${fmtDate(now)}</span><div class="hour-line"></div>`;
     feed.prepend(sep);
   }
 
-  const result=await decryptMsg(rawBytes);
-  updateStats(rawBytes.length,!!result);
+  const result = isSent ? {text: sentText} : await decryptMsg(rawBytes);
+  if(!isSent) updateStats(rawBytes.length, !!result);
 
   const s1hex=rawBytes.length>=8?readU64LE(rawBytes,0):'???';
   const s2hex=rawBytes.length>=16?readU64LE(rawBytes,8):'???';
   const nonceHex=rawBytes.length>=28?toHex(rawBytes.slice(16,28)):'???';
-  const rawHex=fmtHex(rawBytes,40);
+  
+  const dumpHtml = `<details class="dump-details"><summary>📄 Ver volcado hexadecimal (${rawBytes.length} bytes)</summary><div class="dump-block">${hexDump(rawBytes, 10)}</div></details>`;
 
-  // Guardar en Sheets
-  await saveToSheets({
-    hex_raw: rawHex,
-    texto: result?result.text:'',
-    seed1: s1hex,
-    seed2: s2hex,
-    nonce: nonceHex,
-    bytes: rawBytes.length,
-    ok: !!result
-  });
+  if(!isSent){
+    const hexFull = toHex(rawBytes);
+    await saveToSheets({hex_raw:hexFull, texto:result?result.text:'', seed1:s1hex, seed2:s2hex, nonce:nonceHex, bytes:rawBytes.length, ok:!!result});
+  }
 
-  const card=document.createElement('div');
-  card.className='msg-card';
-  card.innerHTML=`
-    <div class="msg-header">
-      <span class="msg-index">#${String(msgCount).padStart(4,'0')}</span>
-      <div class="msg-meta">
-        <span class="msg-size">${rawBytes.length} bytes</span>
-        <span class="msg-timestamp">${ts}</span>
-      </div>
-    </div>
-    <div class="msg-body">
-      <div>
-        <div class="msg-section-label label-enc">⬡ Tráfico cifrado (hex)</div>
-        <div class="hex-block">${rawHex}</div>
-      </div>
-      <div>
-        <div class="msg-section-label label-dec">✓ Mensaje descifrado</div>
-        ${result?`<div class="plaintext-block">${result.text}</div>`:`<div class="plaintext-block" style="color:var(--red);background:rgba(248,113,113,.07);border-color:rgba(248,113,113,.2)">⚠ No se pudo descifrar</div>`}
-      </div>
-      <div>
-        <div class="msg-section-label label-meta">◈ Metadatos</div>
-        <div class="meta-grid">
-          <div class="meta-item"><div class="meta-key">seed1</div><div class="meta-val">${s1hex}</div></div>
-          <div class="meta-item"><div class="meta-key">seed2</div><div class="meta-val">${s2hex}</div></div>
-          <div class="meta-item" style="grid-column:span 2"><div class="meta-key">nonce</div><div class="meta-val">${nonceHex}</div></div>
-          ${result?`<div class="meta-item" style="grid-column:span 2"><div class="meta-key">key (SHA-256)</div><div class="meta-val">${toHex(result.kb)}</div></div>`:''}
-        </div>
-      </div>
-    </div>
-  `;
-  feed.prepend(card);
+  const badgeHtml = isSent ? '<span class="msg-badge tx">TX</span>' : '<span class="msg-badge rx">RX</span>';
+  
+  let messageContent = '', textClass = '';
+  if(isSent){
+    messageContent = escapeHtml(sentText);
+    textClass = 'senttext-block';
+  } else if(result){
+    messageContent = escapeHtml(result.text);
+    textClass = 'plaintext-block';
+  } else {
+    messageContent = '⚠ No se pudo descifrar el mensaje (clave incorrecta o datos corruptos)';
+    textClass = 'plaintext-block error-block';
+  }
+
+  const keyHtml = (result && result.kb && !isSent) ? `<div class="meta-item" style="grid-column:span 2"><div class="meta-key">key (SHA-256)</div><div class="meta-val" style="word-break:break-all">${toHex(result.kb)}</div></div>` : '';
+
+  const cardHtml = `<div class="msg-card ${isSent ? 'sent' : ''}">
+<div class="msg-header">
+<span class="msg-index">#${String(msgCount).padStart(4,'0')}</span>
+<div class="msg-meta">${badgeHtml}<span class="msg-size">${rawBytes.length} bytes</span><span class="msg-timestamp">${ts}</span></div>
+</div>
+<div class="msg-body">
+<div><div class="msg-section-label label-dec">🔓 Texto ${isSent ? 'original' : 'descifrado'}</div><div class="${textClass}">${messageContent}</div></div>
+<div><div class="msg-section-label label-enc">⬡ Cifrado (dump colapsable)</div>${dumpHtml}</div>
+<div><div class="msg-section-label label-meta">◈ Metadatos de cifrado</div><div class="meta-grid"><div class="meta-item"><div class="meta-key">seed1</div><div class="meta-val">${s1hex}</div></div><div class="meta-item"><div class="meta-key">seed2</div><div class="meta-val">${s2hex}</div></div><div class="meta-item" style="grid-column:span 2"><div class="meta-key">nonce</div><div class="meta-val">${nonceHex}</div></div>${keyHtml}</div></div>
+</div>
+</div>`;
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = cardHtml;
+  const cardElement = tempDiv.firstElementChild;
+  if (cardElement) feed.prepend(cardElement);
+  feed.scrollTop = 0;
 }
 
 function clearFeed(){
   document.getElementById('feed').innerHTML='<div class="feed-empty" id="feed-empty"><div class="feed-empty-icon">📡</div><span>Esperando mensajes...</span><span style="font-size:10px;color:var(--gray3)">topic: aizawa/secure</span></div>';
-  totalMsg=okMsg=totalBytes=msgCount=0;lastHour='';
-  ['stat-total','stat-ok','stat-bytes'].forEach(id=>document.getElementById(id).textContent='0');
+  totalMsg=okMsg=msgCount=0;lastHour='';
+  ['stat-total','stat-ok'].forEach(id=>document.getElementById(id).textContent='0');
 }
 
-/* ════════ MQTT ════════ */
-const BROKER = 'broker.hivemq.com';
-const PORT   = 8884;
-const TOPIC='aizawa/secure';
+/* ══════════════════════════════════════════════ PUBLICAR MENSAJE ══════════════════════════════════════════════ */
+async function publishMessage(){
+  const input=document.getElementById('publish-input');
+  const btn=document.getElementById('publish-btn');
+  const statusDiv=document.getElementById('publish-status');
+  const text=input.value.trim();
+  if(!text) return;
+  btn.disabled=true;
+  statusDiv.className='publish-status sending';
+  statusDiv.textContent='⟳ Cifrando con Aizawa Q32...';
+  try{
+    const {packet, seed1} = await encryptMessage(text);
+    statusDiv.textContent='⟳ Publicando en MQTT...';
+    const msg=new Paho.MQTT.Message(packet);
+    msg.destinationName=TOPIC;
+    mqttClient.send(msg);
+    sentMsg++; document.getElementById('stat-sent').textContent=sentMsg;
+    await addMessage(packet, true, text);
+    statusDiv.className='publish-status ok';
+    statusDiv.textContent=`✓ Enviado — ${packet.length} bytes cifrados con seed ${seed1.toString(16).slice(-8).toUpperCase()}...`;
+    input.value='';
+    setTimeout(()=>statusDiv.textContent='',4000);
+  }catch(e){
+    console.error(e);
+    statusDiv.className='publish-status err';
+    statusDiv.textContent='✗ Error al publicar: '+e.message;
+  } finally { btn.disabled=false; input.focus(); }
+}
+
+/* ══════════════════════════════════════════════ MQTT ══════════════════════════════════════════════ */
+const BROKER='broker.hivemq.com', TOPIC='aizawa/secure';
+const PORTS=[{port:8884,ssl:true},{port:8083,ssl:true},{port:8080,ssl:false}];
+let portIdx=0;
 const CLIENT_ID='aizawa_web_'+Math.random().toString(36).slice(2,8);
 const badge=document.getElementById('status-badge'),statusTxt=document.getElementById('status-text');
 function setStatus(s,t){badge.className='status-badge '+s;statusTxt.textContent=t}
-const mqttClient=new Paho.MQTT.Client(BROKER,PORT,CLIENT_ID);
-mqttClient.onConnectionLost=function(){setStatus('error','Desconectado');setTimeout(connect,3000)};
-mqttClient.onMessageArrived = mqttClient.onMessageArrived =
-async function(msg)
-{
-  try
-  {
-    const rawBytes =
-      new Uint8Array(
-        msg.payloadBytes
-      );
-
-    console.log(
-      'MQTT RX:',
-      rawBytes
-    );
-
-    // MOSTRAR EN FEED
-    await addMessage(rawBytes);
-
-    // DEBUG
-    console.log(
-      'Mensaje procesado OK'
-    );
-  }
-  catch(err)
-  {
-    console.error(
-      'ERROR MQTT:',
-      err
-    );
-  }
-};
-
+let mqttClient=null;
+function buildClient(){
+  const {port}=PORTS[portIdx];
+  const c=new Paho.MQTT.Client(BROKER,port,CLIENT_ID+'_'+portIdx);
+  c.onConnectionLost=function(){ setStatus('error','Desconectado'); setTimeout(connect,3000); };
+  c.onMessageArrived=async function(msg){ try{ await addMessage(new Uint8Array(msg.payloadBytes)); } catch(e){ console.error('MQTT error:',e); } };
+  return c;
+}
 function connect(){
-  setStatus('','Conectando...');
-  mqttClient.connect({
-    onSuccess(){setStatus('connected','Conectado');mqttClient.subscribe(TOPIC);loadHistory()},
-    onFailure(e){setStatus('error','Error: '+e.errorMessage);setTimeout(connect,4000)},
-    keepAliveInterval:60,useSSL:true
-  });
+  const {port,ssl}=PORTS[portIdx];
+  setStatus('','Conectando... (puerto '+port+')');
+  mqttClient=buildClient();
+  mqttClient.connect({ onSuccess(){ setStatus('connected','Conectado :'+port); mqttClient.subscribe(TOPIC); loadHistory(); }, onFailure(e){ console.warn('Puerto '+port+' falló:',e.errorMessage); portIdx=(portIdx+1)%PORTS.length; setStatus('error','Reintentando...'); setTimeout(connect,2000); }, keepAliveInterval:60, useSSL:ssl });
 }
 connect();
 
-/* ════════ ATRACTOR AIZAWA — CANVAS ════════ */
+/* ══════════════════════════════════════════════ ATRACTOR DE AIZAWA ══════════════════════════════════════════════ */
 (function(){
-  const canvas=document.getElementById('aizawa-canvas'),ctx=canvas.getContext('2d');
-  const W=canvas.width,H=canvas.height;
+  const canvas=document.getElementById('aizawa-canvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
   const fa=0.95,fb=0.7,fc=0.6,fd=3.5,fe=0.25,ff=0.1,fh=0.005;
-  let ax=0.1,ay=0,az=0,angle=0;
-  const TRAIL=2500,pts=[];
-  function step(){const dx=(az-fb)*ax-fd*ay,dy=fd*ax+(az-fb)*ay,dz=fc+fa*az-az*az*az/3-(ax*ax+ay*ay)*(1+fe*az)+ff*az*ax*ax*ax;ax+=fh*dx;ay+=fh*dy;az+=fh*dz}
-  function proj(x,y,z,a){const c=Math.cos(a),s=Math.sin(a),px=x*c+z*s,pz=-x*s+z*c,sc=80/(pz+4);return{sx:W/2+px*sc*18,sy:H/2-y*sc*18,d:(pz+4)/8}}
-  function draw(){
-    for(let i=0;i<6;i++){step();pts.push({x:ax,y:ay,z:az});if(pts.length>TRAIL)pts.shift()}
-    angle+=0.004;
-    ctx.fillStyle='rgba(10,15,26,0.18)';ctx.fillRect(0,0,W,H);
-    for(let i=1;i<pts.length;i++){
-      const p0=proj(pts[i-1].x,pts[i-1].y,pts[i-1].z,angle),p1=proj(pts[i].x,pts[i].y,pts[i].z,angle);
-      const t=i/pts.length,al=t*.85,r=Math.round(56+t*14),g=Math.round(189-t*40),b=Math.round(248-t*80);
-      ctx.beginPath();ctx.moveTo(p0.sx,p0.sy);ctx.lineTo(p1.sx,p1.sy);
-      ctx.strokeStyle=`rgba(${r},${g},${b},${al})`;ctx.lineWidth=t*1.2+.3;ctx.stroke();
-    }
-    if(pts.length){const l=pts[pts.length-1],p=proj(l.x,l.y,l.z,angle);
-      ctx.beginPath();ctx.arc(p.sx,p.sy,3,0,Math.PI*2);ctx.fillStyle='rgba(56,189,248,.9)';ctx.fill();
-      ctx.beginPath();ctx.arc(p.sx,p.sy,6,0,Math.PI*2);ctx.fillStyle='rgba(56,189,248,.15)';ctx.fill();
-    }
-    requestAnimationFrame(draw);
-  }
-  for(let i=0;i<3000;i++)step();
-  ctx.fillStyle='#0A0F1A';ctx.fillRect(0,0,W,H);
-  draw();
+  let ax=0.1,ay=0.0,az=0.0;
+  let angleY=0.0, angleX=0.4;
+  const TRAIL=5000;
+  const pts=[];
+  let pulseT=0;
+  let lastTime=0,frameCount=0,fps=0;
+  function stepF(){ const dx=(az-fb)*ax-fd*ay; const dy=fd*ax+(az-fb)*ay; const dz=fc+fa*az-az*az*az/3-(ax*ax+ay*ay)*(1+fe*az)+ff*az*ax*ax*ax; ax+=fh*dx; ay+=fh*dy; az+=fh*dz; }
+  function project(x,y,z){ const cy=Math.cos(angleY),sy=Math.sin(angleY); const x1=x*cy+z*sy; const z1=-x*sy+z*cy; const cx=Math.cos(angleX),sx=Math.sin(angleX); const y2=y*cx-z1*sx; const z2=y*sx+z1*cx; const camDist=10; const persp=camDist/(camDist+z2*0.3); const SCALE=55; return { sx: W/2 + x1*SCALE*persp, sy: H/2 + 20 - y2*SCALE*persp, z2: z2 }; }
+  function trailColor(t){ const alpha=Math.pow(t,1.2)*0.92; let r,g,b; if(t<0.33){ const k=t/0.33; r=Math.round(56+k*30); g=Math.round(189-k*50); b=248; } else if(t<0.66){ const k=(t-0.33)/0.33; r=Math.round(86+k*81); g=Math.round(139-k*78); b=Math.round(248-k*38); } else { const k=(t-0.66)/0.34; r=Math.round(167-k*40); g=Math.round(61-k*22); b=Math.round(210+k*40); } return `rgba(${r},${g},${b},${alpha})`; }
+  function draw(ts){ frameCount++; if(ts-lastTime>=1000){ fps=frameCount;frameCount=0;lastTime=ts; const fpsSpan=document.getElementById('canvas-fps'); if(fpsSpan) fpsSpan.textContent=fps+' fps'; } for(let i=0;i<7;i++){ stepF(); pts.push({x:ax,y:ay,z:az}); if(pts.length>TRAIL)pts.shift(); } angleY+=0.0025; angleX=0.45+Math.sin(angleY*0.25)*0.15; pulseT+=0.07; ctx.fillStyle='rgba(4,8,16,0.22)'; ctx.fillRect(0,0,W,H); for(let i=1;i<pts.length;i++){ const t=i/pts.length; const p0=project(pts[i-1].x,pts[i-1].y,pts[i-1].z); const p1=project(pts[i].x,pts[i].y,pts[i].z); ctx.beginPath(); ctx.moveTo(p0.sx,p0.sy); ctx.lineTo(p1.sx,p1.sy); ctx.strokeStyle=trailColor(t); ctx.lineWidth=t*1.6+0.15; ctx.stroke(); } if(pts.length>0){ const last=pts[pts.length-1]; const p=project(last.x,last.y,last.z); const pulse=0.55+0.45*Math.sin(pulseT); const grad=ctx.createRadialGradient(p.sx,p.sy,0,p.sx,p.sy,18*pulse); grad.addColorStop(0,'rgba(56,189,248,0.45)'); grad.addColorStop(0.4,'rgba(56,189,248,0.12)'); grad.addColorStop(1,'rgba(56,189,248,0)'); ctx.beginPath();ctx.arc(p.sx,p.sy,18*pulse,0,Math.PI*2); ctx.fillStyle=grad;ctx.fill(); ctx.beginPath();ctx.arc(p.sx,p.sy,3.5,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,0.95)';ctx.fill(); ctx.beginPath();ctx.arc(p.sx,p.sy,7,0,Math.PI*2); ctx.strokeStyle=`rgba(56,189,248,${0.65*pulse})`; ctx.lineWidth=1.5;ctx.stroke(); } requestAnimationFrame(draw); }
+  for(let i=0;i<5000;i++)stepF(); ctx.fillStyle='#040810'; ctx.fillRect(0,0,W,H); requestAnimationFrame(draw);
 })();
 
-// Init sync indicator
-if(!APPS_SCRIPT_URL||APPS_SCRIPT_URL.includes('PEGA_AQUI')){
-  document.getElementById('sync-text').textContent='Configura Apps Script URL';
-} else {
-  document.getElementById('sync-dot').className='sync-dot saved';
-  document.getElementById('sync-text').textContent='Sheets conectado';
-}
+if(!APPS_SCRIPT_URL||APPS_SCRIPT_URL.includes('PEGA_AQUI')) document.getElementById('sync-text').textContent='Configura Apps Script URL';
+else { document.getElementById('sync-dot').className='sync-dot saved'; document.getElementById('sync-text').textContent='Sheets conectado'; }
 </script>
 </body>
 </html>
